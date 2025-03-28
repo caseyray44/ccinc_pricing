@@ -14,7 +14,7 @@ def get_google_sheets_client():
     client = gspread.authorize(creds)
     return client
 
-def save_estimate(account_name, customer_info, inputs, results):
+def save_estimate(account_name, inputs, results):
     try:
         client = get_google_sheets_client()
         spreadsheet_id = st.secrets["SPREADSHEET_ID"]
@@ -31,15 +31,14 @@ def save_estimate(account_name, customer_info, inputs, results):
 
         # Prepare the data to save
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        customer_info_str = json.dumps(customer_info)
         inputs_str = json.dumps(inputs)
         results_str = json.dumps(results)
 
         # If the account name exists, update the existing row; otherwise, append a new row
         if row_to_update:
-            sheet.update(f"A{row_to_update}:E{row_to_update}", [[account_name, timestamp, customer_info_str, inputs_str, results_str]])
+            sheet.update(f"A{row_to_update}:D{row_to_update}", [[account_name, timestamp, inputs_str, results_str]])
         else:
-            sheet.append_row([account_name, timestamp, customer_info_str, inputs_str, results_str])
+            sheet.append_row([account_name, timestamp, inputs_str, results_str])
         st.success(f"Estimate for {account_name} saved to Google Sheets!")
     except Exception as e:
         st.error(f"Failed to save estimate. Error: {str(e)}")
@@ -88,27 +87,27 @@ if "inputs" not in st.session_state:
 if "results" not in st.session_state:
     st.session_state.results = {}
 
+# Function to display the pricing estimate
+def display_pricing_estimate():
+    if st.session_state.results:
+        st.header("Pricing Estimate")
+        # Mandatory services (always display these if they exist)
+        for service in ["house_washing", "pest_control", "rodent_control", "exterior_windows", "interior_windows", "tracks_sills"]:
+            if service in st.session_state.results:
+                st.write(f"{service.replace('_', ' ')}: {st.session_state.results[service]}")
+        # Additional services
+        for service, price in st.session_state.results.items():
+            if service not in ["house_washing", "pest_control", "rodent_control", "exterior_windows", "interior_windows", "tracks_sills", "total"]:
+                st.write(f"{service}: {price}")
+        # Total
+        if "total" in st.session_state.results:
+            st.write(f"**TOTAL: {st.session_state.results['total']}**")
+
 # Title
 st.title("CC Inc. Pricing Calculator")
 
 # Account Name
 account_name = st.text_input("Account Name", placeholder="Enter account name (e.g., Rizzo)")
-
-# Customer Information
-st.header("Customer Information")
-first_name = st.text_input("First Name")
-last_name = st.text_input("Last Name")
-email = st.text_input("Email")
-phone = st.text_input("Phone")
-address = st.text_input("Address")
-
-customer_info = {
-    "first_name": first_name,
-    "last_name": last_name,
-    "email": email,
-    "phone": phone,
-    "address": address,
-}
 
 # Estimate Details
 st.header("Estimate Details")
@@ -186,7 +185,7 @@ if st.button("Calculate"):
 
         # Pest Control Calculation
         base_price = square_footage * 0.045  # Reuse square footage from house washing
-        base_price = min(base_price, 200.00)  # Cap at $200 (removed property type distinction)
+        base_price = min(base_price, 200.00)  # Cap at $200
         pest_overhangs_price = (small_overhangs * 15.00) + (medium_overhangs * 20.00) + (large_overhangs * 25.00)
         pest_decks_price = (small_decks * 10.00) + (medium_decks * 20.00) + (large_decks * 25.00)
         pest_ladder_price = ladder_spots_pest * 75.00
@@ -220,6 +219,10 @@ if st.button("Calculate"):
             "tracks_sills": round(tracks_sills_total, 2),
         }
 
+        # Calculate initial total
+        total = sum(results.values())
+        results["total"] = round(total, 2)
+
         # Update inputs in session state
         st.session_state.inputs.update({
             "square_footage": square_footage,
@@ -244,17 +247,13 @@ if st.button("Calculate"):
             "tracks_sills_price": tracks_sills_price,
         })
 
-        # Display Mandatory Results
-        st.header("Pricing Estimate")
-        st.write(f"house washing: {results['house_washing']}")
-        st.write(f"pest control: {results['pest_control']}")
-        st.write(f"rodent control: {results['rodent_control']}")
-        st.write(f"exterior windows: {results['exterior_windows']}")
-        st.write(f"interior windows: {results['interior_windows']}")
-        st.write(f"tracks and sills: {results['tracks_sills']}")
-
-        # Cross-Sell Flow
+        # Store results in session state
         st.session_state.results = results
+
+        # Display the initial pricing estimate
+        display_pricing_estimate()
+
+        # Show the additional services prompt
         st.session_state.show_additional_services = True
 
 # Additional Services
@@ -342,19 +341,23 @@ if "show_additional_services" in st.session_state and st.session_state.show_addi
                 st.session_state.inputs["custom_items"].append(custom_item)
                 additional_results[f"custom line item ({custom_item_name})"] = round(custom_item_price, 2)
 
-        # Display Additional Results
-        for service, price in additional_results.items():
-            st.write(f"{service}: {price}")
-            st.session_state.results[service] = price
+        # Update session state with additional results
+        if additional_results:
+            st.session_state.results.update(additional_results)
+            # Recalculate total
+            total = sum(st.session_state.results.values()) - st.session_state.results.get("total", 0)
+            st.session_state.results["total"] = round(total, 2)
 
-        # Calculate Total
-        total = sum(st.session_state.results.values())
-        st.session_state.results["total"] = round(total, 2)
-        st.write(f"**TOTAL: {st.session_state.results['total']}**")
+        # Display the updated pricing estimate
+        display_pricing_estimate()
 
-        # Save Estimate Button
-        if st.button("Save Estimate"):
-            if not account_name:
-                st.error("Please enter an account name before saving.")
-            else:
-                save_estimate(account_name, customer_info, st.session_state.inputs, st.session_state.results)
+# Display the pricing estimate if it exists (e.g., after page reload or additional services)
+display_pricing_estimate()
+
+# Save Estimate Button (only show if there are results)
+if st.session_state.results:
+    if st.button("Save Estimate"):
+        if not account_name:
+            st.error("Please enter an account name before saving.")
+        else:
+            save_estimate(account_name, st.session_state.inputs, st.session_state.results)
