@@ -60,18 +60,9 @@ if "inputs" not in st.session_state:
         "large_decks": 0,
         "ladder_work": "NO",
         "ladder_spots_house": 0,
-        "pest_square_footage": 0,
-        "property_type": "Residential",
-        "pest_small_overhangs": 0,
-        "pest_medium_overhangs": 0,
-        "pest_large_overhangs": 0,
-        "pest_small_decks": 0,
-        "pest_medium_decks": 0,
-        "pest_large_decks": 0,
         "ladder_spots_pest": 0,
-        "pest_applications": 1,
         "rodent_stations": 4,
-        "interior_monitoring": "NO",
+        "interior_monitoring": False,
         "exterior_standard_windows": 0,
         "exterior_high_windows": 0,
         "interior_standard_windows": 0,
@@ -139,25 +130,20 @@ ladder_spots_house = st.number_input("Ladder Spots (House Washing)", min_value=0
 
 # Pest Control
 st.subheader("Pest Control")
-pest_square_footage = st.number_input("Square Footage (Pest Control)", min_value=0, step=100, key="pest_square_footage")
-property_type = st.selectbox("Property Type", ["Residential", "Commercial"], key="property_type")
-pest_small_overhangs = st.number_input("Small Overhangs (Pest)", min_value=0, step=1, key="pest_small_overhangs")
-pest_medium_overhangs = st.number_input("Medium Overhangs (Pest)", min_value=0, step=1, key="pest_medium_overhangs")
-pest_large_overhangs = st.number_input("Large Overhangs (Pest)", min_value=0, step=1, key="pest_large_overhangs")
-pest_small_decks = st.number_input("Small Decks (Pest)", min_value=0, step=1, key="pest_small_decks")
-pest_medium_decks = st.number_input("Medium Decks (Pest)", min_value=0, step=1, key="pest_medium_decks")
-pest_large_decks = st.number_input("Large Decks (Pest)", min_value=0, step=1, key="pest_large_decks")
 ladder_spots_pest = st.number_input("Ladder Spots (Pest Control)", min_value=0, step=1, key="ladder_spots_pest")
-pest_applications = st.number_input("Number of Applications", min_value=1, step=1, key="pest_applications")
 
 # Rodent Control
 st.subheader("Rodent Control")
-rodent_stations = st.number_input("Rodent Stations", min_value=0, step=1, key="rodent_stations")
-interior_monitoring = st.selectbox("Interior Monitoring?", ["NO", "YES"], key="interior_monitoring")
+rodent_stations = st.number_input("Rodent Stations", min_value=0, step=1, value=4, key="rodent_stations")
+interior_monitoring = st.checkbox("Interior Monitoring", key="interior_monitoring")
 
 # Window Cleaning
 st.subheader("Window Cleaning")
 exterior_standard_windows = st.number_input("Exterior Standard Windows", min_value=0, step=1, key="exterior_standard_windows")
+exterior_high_windows = st.number_input("Exterior High Windows", min_value=0, step=1, key="exterior_high_windows")
+interior_standard_windows = st.number_input("Interior Standard Windows", min_value=0, step=1, key="interior_standard_windows")
+interior_high_windows = st.number_input("Interior High Windows", min_value=0, step=1, key="interior_high_windows")
+tracks_sills_price = st.number_input("Tracks/Sills Price (minimum $99)", min_value=0.0, step=1.0, value=99.0, key="tracks_sills_price")
 
 # Calculate Button
 if st.button("Calculate"):
@@ -172,11 +158,6 @@ if st.button("Calculate"):
         missing_details.append("cleaning type for house washing")
     if ladder_work == "YES" and ladder_spots_house == 0:
         missing_details.append("number of ladder spots for house washing (since ladder work is YES)")
-    # Pest Control
-    if pest_square_footage == 0:
-        missing_details.append("square footage for pest control")
-    if not property_type:
-        missing_details.append("property type (Residential or Commercial) for pest control")
     # Window Cleaning
     if tracks_sills_price == 0:
         missing_details.append("tracks/sills price (or confirm to use default $99)")
@@ -204,24 +185,20 @@ if st.button("Calculate"):
             house_washing_total = 299.00
 
         # Pest Control Calculation
-        pest_results = []
-        for app in range(pest_applications):
-            base_price = pest_square_footage * 0.045
-            cap = 200.00 if property_type == "Residential" else 150.00
-            base_price = min(base_price, cap)
-            pest_overhangs_price = (pest_small_overhangs * 15.00) + (pest_medium_overhangs * 20.00) + (pest_large_overhangs * 25.00)
-            pest_decks_price = (pest_small_decks * 10.00) + (pest_medium_decks * 20.00) + (pest_large_decks * 25.00)
-            pest_ladder_price = ladder_spots_pest * 75.00
-            pest_total = base_price + pest_overhangs_price + pest_decks_price + pest_ladder_price
-            if pest_total < 119.00:
-                pest_total = 119.00
-            pest_results.append(("pest control" if app == 0 else f"pest control {app+1}x", pest_total))
+        base_price = square_footage * 0.045  # Reuse square footage from house washing
+        base_price = min(base_price, 200.00)  # Cap at $200 (removed property type distinction)
+        pest_overhangs_price = (small_overhangs * 15.00) + (medium_overhangs * 20.00) + (large_overhangs * 25.00)
+        pest_decks_price = (small_decks * 10.00) + (medium_decks * 20.00) + (large_decks * 25.00)
+        pest_ladder_price = ladder_spots_pest * 75.00
+        pest_total = base_price + pest_overhangs_price + pest_decks_price + pest_ladder_price
+        if pest_total < 119.00:
+            pest_total = 119.00
 
         # Rodent Control Calculation
         rodent_base_price = 399.00
         extra_stations = max(0, rodent_stations - 4)
         rodent_stations_price = extra_stations * 30.00
-        interior_monitoring_price = 50.00 if interior_monitoring == "YES" else 0.00
+        interior_monitoring_price = 50.00 if interior_monitoring else 0.00
         rodent_control_total = rodent_base_price + rodent_stations_price + interior_monitoring_price
 
         # Window Cleaning Calculation
@@ -236,14 +213,12 @@ if st.button("Calculate"):
         # Store mandatory results
         results = {
             "house_washing": round(house_washing_total, 2),
-            "pest_control": round(pest_results[0][1], 2) if pest_results else 0.00,
+            "pest_control": round(pest_total, 2),
             "rodent_control": round(rodent_control_total, 2),
             "exterior_windows": round(exterior_windows_total, 2),
             "interior_windows": round(interior_windows_total, 2),
             "tracks_sills": round(tracks_sills_total, 2),
         }
-        for app_idx, (label, value) in enumerate(pest_results[1:], start=2):
-            results[label] = round(value, 2)
 
         # Update inputs in session state
         st.session_state.inputs.update({
@@ -259,16 +234,7 @@ if st.button("Calculate"):
             "large_decks": large_decks,
             "ladder_work": ladder_work,
             "ladder_spots_house": ladder_spots_house,
-            "pest_square_footage": pest_square_footage,
-            "property_type": property_type,
-            "pest_small_overhangs": pest_small_overhangs,
-            "pest_medium_overhangs": pest_medium_overhangs,
-            "pest_large_overhangs": pest_large_overhangs,
-            "pest_small_decks": pest_small_decks,
-            "pest_medium_decks": pest_medium_decks,
-            "pest_large_decks": pest_large_decks,
             "ladder_spots_pest": ladder_spots_pest,
-            "pest_applications": pest_applications,
             "rodent_stations": rodent_stations,
             "interior_monitoring": interior_monitoring,
             "exterior_standard_windows": exterior_standard_windows,
@@ -282,10 +248,6 @@ if st.button("Calculate"):
         st.header("Pricing Estimate")
         st.write(f"house washing: {results['house_washing']}")
         st.write(f"pest control: {results['pest_control']}")
-        for app_idx in range(2, pest_applications + 1):
-            label = f"pest control {app_idx}x"
-            if label in results:
-                st.write(f"{label}: {results[label]}")
         st.write(f"rodent control: {results['rodent_control']}")
         st.write(f"exterior windows: {results['exterior_windows']}")
         st.write(f"interior windows: {results['interior_windows']}")
