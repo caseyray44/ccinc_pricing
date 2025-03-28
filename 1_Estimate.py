@@ -1,6 +1,5 @@
 import streamlit as st
 import json
-import os
 from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -50,19 +49,49 @@ def save_estimate(account_name, customer_info, inputs, results):
 if "inputs" not in st.session_state:
     st.session_state.inputs = {
         "square_footage": 0,
-        "stories": 1,
+        "stories": 1.0,
         "siding": "Brick",
         "cleaning": "Soap/Scrub",
         "small_overhangs": 0,
+        "medium_overhangs": 0,
+        "large_overhangs": 0,
+        "small_decks": 0,
         "medium_decks": 0,
+        "large_decks": 0,
+        "ladder_work": "NO",
         "ladder_spots_house": 0,
+        "pest_square_footage": 0,
+        "property_type": "Residential",
+        "pest_small_overhangs": 0,
+        "pest_medium_overhangs": 0,
+        "pest_large_overhangs": 0,
+        "pest_small_decks": 0,
+        "pest_medium_decks": 0,
+        "pest_large_decks": 0,
         "ladder_spots_pest": 0,
-        "rodent_stations": 0,
+        "pest_applications": 1,
+        "rodent_stations": 4,
+        "interior_monitoring": "NO",
         "exterior_standard_windows": 0,
         "exterior_high_windows": 0,
         "interior_standard_windows": 0,
         "interior_high_windows": 0,
-        "tracks_sills_price": 0,
+        "tracks_sills_price": 99.0,
+        # Additional services
+        "roof_treatment": "NO",
+        "roof_type": "Asphalt",
+        "roof_sq_ft": 0,
+        "roof_metal_min": 399.0,
+        "gutter_cleaning": "NO",
+        "gutter_linear_feet": 0,
+        "roof_blow_off": "NO",
+        "blow_off_hours": 0,
+        "blow_off_men": 1,
+        "concrete_cleaning": "NO",
+        "concrete_sq_ft": 0,
+        "deck_dock_cleaning": "NO",
+        "deck_dock_sq_ft": 0,
+        "custom_items": [],
     }
 
 if "results" not in st.session_state:
@@ -96,111 +125,274 @@ st.header("Estimate Details")
 # House Washing
 st.subheader("House Washing")
 square_footage = st.number_input("Square Footage", min_value=0, step=100, key="square_footage")
-stories = st.number_input("Stories", min_value=1, max_value=5, step=1, key="stories")
-siding = st.selectbox("Siding", ["Brick", "Vinyl", "Stucco", "Wood", "Aluminum"], key="siding")
-cleaning = st.selectbox("Cleaning", ["Soap/Scrub", "Soft Wash", "Pressure Wash", "Chemical Wash"], key="cleaning")
+stories = st.selectbox("Stories", [1.0, 1.5, 2.0, 2.5, 3.0], key="stories")
+siding = st.selectbox("Siding", ["Brick", "Metal", "Vinyl", "Shiplap", "Hardie/LP", "Log/Half-Log"], key="siding")
+cleaning = st.selectbox("Cleaning", ["Soap/Scrub", "SH"], key="cleaning")
 small_overhangs = st.number_input("Small Overhangs", min_value=0, step=1, key="small_overhangs")
+medium_overhangs = st.number_input("Medium Overhangs", min_value=0, step=1, key="medium_overhangs")
+large_overhangs = st.number_input("Large Overhangs", min_value=0, step=1, key="large_overhangs")
+small_decks = st.number_input("Small Decks", min_value=0, step=1, key="small_decks")
 medium_decks = st.number_input("Medium Decks", min_value=0, step=1, key="medium_decks")
-ladder_spots_house = st.number_input("Ladder Spots (House Washing)", min_value=0, step=1, key="ladder_spots_house")
+large_decks = st.number_input("Large Decks", min_value=0, step=1, key="large_decks")
+ladder_work = st.selectbox("Ladder Work Required?", ["NO", "YES"], key="ladder_work")
+ladder_spots_house = st.number_input("Ladder Spots (House Washing)", min_value=0, step=1, key="ladder_spots_house") if ladder_work == "YES" else 0
 
 # Pest Control
 st.subheader("Pest Control")
+pest_square_footage = st.number_input("Square Footage (Pest Control)", min_value=0, step=100, key="pest_square_footage")
+property_type = st.selectbox("Property Type", ["Residential", "Commercial"], key="property_type")
+pest_small_overhangs = st.number_input("Small Overhangs (Pest)", min_value=0, step=1, key="pest_small_overhangs")
+pest_medium_overhangs = st.number_input("Medium Overhangs (Pest)", min_value=0, step=1, key="pest_medium_overhangs")
+pest_large_overhangs = st.number_input("Large Overhangs (Pest)", min_value=0, step=1, key="pest_large_overhangs")
+pest_small_decks = st.number_input("Small Decks (Pest)", min_value=0, step=1, key="pest_small_decks")
+pest_medium_decks = st.number_input("Medium Decks (Pest)", min_value=0, step=1, key="pest_medium_decks")
+pest_large_decks = st.number_input("Large Decks (Pest)", min_value=0, step=1, key="pest_large_decks")
 ladder_spots_pest = st.number_input("Ladder Spots (Pest Control)", min_value=0, step=1, key="ladder_spots_pest")
+pest_applications = st.number_input("Number of Applications", min_value=1, step=1, key="pest_applications")
+
+# Rodent Control
+st.subheader("Rodent Control")
 rodent_stations = st.number_input("Rodent Stations", min_value=0, step=1, key="rodent_stations")
+interior_monitoring = st.selectbox("Interior Monitoring?", ["NO", "YES"], key="interior_monitoring")
 
 # Window Cleaning
 st.subheader("Window Cleaning")
-exterior_standard_windows = st.number_input("Exterior Standard Windows", min_value=0, step=1, key="exterior_standard_windows")
-exterior_high_windows = st.number_input("Exterior High Windows", min_value=0, step=1, key="exterior_high_windows")
-interior_standard_windows = st.number_input("Interior Standard Windows", min_value=0, step=1, key="interior_standard_windows")
-interior_high_windows = st.number_input("Interior High Windows", min_value=0, step=1, key="interior_high_windows")
-tracks_sills_price = st.number_input("Tracks/Sills Price", min_value=0.0, step=1.0, key="tracks_sills_price")
+exterior_standard_windows = st.number_input("Exterior Standard Windows", min_value=0, step _
 
 # Calculate Button
 if st.button("Calculate"):
-    # House Washing Calculation
-    base_price = 199.00
-    square_footage_price = square_footage * 0.04
-    stories_price = (stories - 1) * 50.00
-    siding_multipliers = {"Brick": 1.0, "Vinyl": 1.1, "Stucco": 1.2, "Wood": 1.3, "Aluminum": 1.4}
-    siding_price = (base_price + square_footage_price + stories_price) * siding_multipliers[siding]
-    cleaning_multipliers = {"Soap/Scrub": 1.0, "Soft Wash": 1.2, "Pressure Wash": 1.5, "Chemical Wash": 1.8}
-    cleaning_price = siding_price * cleaning_multipliers[cleaning]
-    small_overhangs_price = small_overhangs * 25.00
-    medium_decks_price = medium_decks * 50.00
-    ladder_spots_house_price = ladder_spots_house * 25.00
-    house_washing_total = cleaning_price + small_overhangs_price + medium_decks_price + ladder_spots_house_price
+    # Input Validation
+    missing_details = []
+    # House Washing
+    if square_footage == 0:
+        missing_details.append("square footage for house washing")
+    if not siding:
+        missing_details.append("siding type for house washing")
+    if not cleaning:
+        missing_details.append("cleaning type for house washing")
+    if ladder_work == "YES" and ladder_spots_house == 0:
+        missing_details.append("number of ladder spots for house washing (since ladder work is YES)")
+    # Pest Control
+    if pest_square_footage == 0:
+        missing_details.append("square footage for pest control")
+    if not property_type:
+        missing_details.append("property type (Residential or Commercial) for pest control")
+    # Window Cleaning
+    if tracks_sills_price == 0:
+        missing_details.append("tracks/sills price (or confirm to use default $99)")
 
-    # Pest Control Calculation
-    pest_base_price = 99.00
-    ladder_spots_pest_price = ladder_spots_pest * 25.00
-    pest_control_total = pest_base_price + ladder_spots_pest_price
+    if missing_details:
+        st.error(f"I need more information to calculate the prices. Please provide: {', '.join(missing_details)}.")
+    else:
+        # House Washing Calculation
+        base_rate = 0.18 if cleaning == "Soap/Scrub" else 0.20
+        siding_adjustments = {
+            "Brick": 0.00, "Metal": 0.00, "Vinyl": 0.02, "Shiplap": 0.04,
+            "Hardie/LP": 0.06, "Log/Half-Log": 0.08
+        }
+        adjusted_rate = base_rate + siding_adjustments[siding]
+        base_price = square_footage * adjusted_rate
+        story_multipliers = {1.0: 1.0, 1.5: 1.05, 2.0: 1.1, 2.5: 1.15, 3.0: 1.2}
+        story_price = base_price * story_multipliers[stories]
+        complexity_multiplier = 1.25 if (siding in ["Shiplap", "Log/Half-Log"] or ladder_work == "YES") else 1.0
+        complexity_price = story_price * complexity_multiplier
+        overhangs_price = (small_overhangs * 20.00) + (medium_overhangs * 30.00) + (large_overhangs * 40.00)
+        decks_price = (small_decks * 15.00) + (medium_decks * 25.00) + (large_decks * 40.00)
+        ladder_spots_house_price = ladder_spots_house * 75.00
+        house_washing_total = complexity_price + overhangs_price + decks_price + ladder_spots_house_price
+        if house_washing_total < 299.00:
+            house_washing_total = 299.00
 
-    # Rodent Control Calculation
-    rodent_base_price = 199.00
-    rodent_stations_price = rodent_stations * 50.00
-    rodent_control_total = rodent_base_price + rodent_stations_price
+        # Pest Control Calculation
+        pest_results = []
+        for app in range(pest_applications):
+            base_price = pest_square_footage * 0.045
+            cap = 200.00 if property_type == "Residential" else 150.00
+            base_price = min(base_price, cap)
+            pest_overhangs_price = (pest_small_overhangs * 15.00) + (pest_medium_overhangs * 20.00) + (pest_large_overhangs * 25.00)
+            pest_decks_price = (pest_small_decks * 10.00) + (pest_medium_decks * 20.00) + (pest_large_decks * 25.00)
+            pest_ladder_price = ladder_spots_pest * 75.00
+            pest_total = base_price + pest_overhangs_price + pest_decks_price + pest_ladder_price
+            if pest_total < 119.00:
+                pest_total = 119.00
+            pest_results.append(("pest control" if app == 0 else f"pest control {app+1}x", pest_total))
 
-    # Window Cleaning Calculation
-    exterior_standard_windows_price = exterior_standard_windows * 5.00
-    exterior_high_windows_price = exterior_high_windows * 10.00
-    interior_standard_windows_price = interior_standard_windows * 5.00
-    interior_high_windows_price = interior_high_windows * 10.00
-    windows_total = (exterior_standard_windows_price + exterior_high_windows_price +
-                     interior_standard_windows_price + interior_high_windows_price)
-    tracks_sills_total = tracks_sills_price
+        # Rodent Control Calculation
+        rodent_base_price = 399.00
+        extra_stations = max(0, rodent_stations - 4)
+        rodent_stations_price = extra_stations * 30.00
+        interior_monitoring_price = 50.00 if interior_monitoring == "YES" else 0.00
+        rodent_control_total = rodent_base_price + rodent_stations_price + interior_monitoring_price
 
-    # Total Estimate
-    total_estimate = house_washing_total + pest_control_total + rodent_control_total + windows_total + tracks_sills_total
+        # Window Cleaning Calculation
+        exterior_windows_total = (exterior_standard_windows * 3.30) + (exterior_high_windows * 5.25)
+        if exterior_windows_total < 149.00:
+            exterior_windows_total = 149.00
+        interior_windows_total = (interior_standard_windows * 2.00) + (interior_high_windows * 4.00)
+        if interior_windows_total < 99.00:
+            interior_windows_total = 99.00
+        tracks_sills_total = tracks_sills_price if tracks_sills_price > 0 else 99.00
 
-    # Store results in session state
-    st.session_state.results = {
-        "house_washing": round(house_washing_total, 2),
-        "pest_control": round(pest_control_total, 2),
-        "rodent_control": round(rodent_control_total, 2),
-        "windows": round(windows_total, 2),
-        "tracks_sills": round(tracks_sills_total, 2),
-        "total": round(total_estimate, 2),
-    }
+        # Store mandatory results
+        results = {
+            "house_washing": round(house_washing_total, 2),
+            "pest_control": round(pest_results[0][1], 2) if pest_results else 0.00,
+            "rodent_control": round(rodent_control_total, 2),
+            "exterior_windows": round(exterior_windows_total, 2),
+            "interior_windows": round(interior_windows_total, 2),
+            "tracks_sills": round(tracks_sills_total, 2),
+        }
+        for app_idx, (label, value) in enumerate(pest_results[1:], start=2):
+            results[label] = round(value, 2)
 
-    # Update inputs in session state
-    st.session_state.inputs.update({
-        "square_footage": square_footage,
-        "stories": stories,
-        "siding": siding,
-        "cleaning": cleaning,
-        "small_overhangs": small_overhangs,
-        "medium_decks": medium_decks,
-        "ladder_spots_house": ladder_spots_house,
-        "ladder_spots_pest": ladder_spots_pest,
-        "rodent_stations": rodent_stations,
-        "exterior_standard_windows": exterior_standard_windows,
-        "exterior_high_windows": exterior_high_windows,
-        "interior_standard_windows": interior_standard_windows,
-        "interior_high_windows": interior_high_windows,
-        "tracks_sills_price": tracks_sills_price,
-    })
+        # Update inputs in session state
+        st.session_state.inputs.update({
+            "square_footage": square_footage,
+            "stories": stories,
+            "siding": siding,
+            "cleaning": cleaning,
+            "small_overhangs": small_overhangs,
+            "medium_overhangs": medium_overhangs,
+            "large_overhangs": large_overhangs,
+            "small_decks": small_decks,
+            "medium_decks": medium_decks,
+            "large_decks": large_decks,
+            "ladder_work": ladder_work,
+            "ladder_spots_house": ladder_spots_house,
+            "pest_square_footage": pest_square_footage,
+            "property_type": property_type,
+            "pest_small_overhangs": pest_small_overhangs,
+            "pest_medium_overhangs": pest_medium_overhangs,
+            "pest_large_overhangs": pest_large_overhangs,
+            "pest_small_decks": pest_small_decks,
+            "pest_medium_decks": pest_medium_decks,
+            "pest_large_decks": pest_large_decks,
+            "ladder_spots_pest": ladder_spots_pest,
+            "pest_applications": pest_applications,
+            "rodent_stations": rodent_stations,
+            "interior_monitoring": interior_monitoring,
+            "exterior_standard_windows": exterior_standard_windows,
+            "exterior_high_windows": exterior_high_windows,
+            "interior_standard_windows": interior_standard_windows,
+            "interior_high_windows": interior_high_windows,
+            "tracks_sills_price": tracks_sills_price,
+        })
 
-# Display Results
-if st.session_state.results:
-    st.header("Pricing Estimate")
-    st.write(f"house washing: {st.session_state.results['house_washing']}")
-    st.write(f"pest control: {st.session_state.results['pest_control']}")
-    st.write(f"rodent control: {st.session_state.results['rodent_control']}")
-    st.write(f"windows: {st.session_state.results['windows']}")
-    st.write(f"interior windows: {st.session_state.results['windows']}")
-    st.write(f"tracks and sills: {st.session_state.results['tracks_sills']}")
-    st.write(f"**TOTAL: {st.session_state.results['total']}**")
+        # Display Mandatory Results
+        st.header("Pricing Estimate")
+        st.write(f"house washing: {results['house_washing']}")
+        st.write(f"pest control: {results['pest_control']}")
+        for app_idx in range(2, pest_applications + 1):
+            label = f"pest control {app_idx}x"
+            if label in results:
+                st.write(f"{label}: {results[label]}")
+        st.write(f"rodent control: {results['rodent_control']}")
+        st.write(f"exterior windows: {results['exterior_windows']}")
+        st.write(f"interior windows: {results['interior_windows']}")
+        st.write(f"tracks and sills: {results['tracks_sills']}")
 
-    # Save Estimate Button
-    if st.button("Save Estimate"):
-        if not account_name:
-            st.error("Please enter an account name before saving.")
-        else:
-            save_estimate(account_name, customer_info, st.session_state.inputs, st.session_state.results)
+        # Cross-Sell Flow
+        st.session_state.results = results
+        st.session_state.show_additional_services = True
 
 # Additional Services
-st.header("Would you like any additional services?")
-additional_services = st.selectbox("Select additional services:", ["None", "Gutter Cleaning", "Driveway Cleaning", "Roof Cleaning"])
-if additional_services != "None":
-    st.write(f"Additional service selected: {additional_services}")
+if "show_additional_services" in st.session_state and st.session_state.show_additional_services:
+    st.header("Would you like any additional services? (roof treatment, gutter cleaning, roof blow-off, concrete cleaning, deck/dock cleaning, custom items)")
+    additional_services = st.multiselect("Select additional services:", [
+        "roof treatment", "gutter cleaning", "roof blow-off", "concrete cleaning", "deck/dock cleaning", "custom items"
+    ])
+
+    additional_results = {}
+    if additional_services:
+        for service in additional_services:
+            if service == "roof treatment":
+                roof_type = st.selectbox("Roof Type", ["Asphalt", "Metal"], key="roof_type")
+                roof_sq_ft = st.number_input("Roof Square Footage", min_value=0, step=100, key="roof_sq_ft")
+                roof_metal_min = st.number_input("Metal Roof Minimum (399 or 599)", min_value=399.0, step=1.0, value=399.0, key="roof_metal_min") if roof_type == "Metal" else 399.0
+                if roof_sq_ft == 0:
+                    st.error("I need more information to calculate the prices. Please provide: roof square footage.")
+                    continue
+                rate = 0.25 if roof_type == "Asphalt" else 0.85
+                min_price = 399.0 if roof_type == "Asphalt" else roof_metal_min
+                roof_price = roof_sq_ft * rate
+                roof_price = max(roof_price, min_price)
+                additional_results["roof treatment"] = round(roof_price, 2)
+                st.session_state.inputs.update({
+                    "roof_treatment": "YES",
+                    "roof_type": roof_type,
+                    "roof_sq_ft": roof_sq_ft,
+                    "roof_metal_min": roof_metal_min,
+                })
+            elif service == "gutter cleaning":
+                gutter_linear_feet = st.number_input("Gutter Linear Feet", min_value=0, step=1, key="gutter_linear_feet")
+                if gutter_linear_feet == 0:
+                    st.error("I need more information to calculate the prices. Please provide: gutter linear feet.")
+                    continue
+                gutter_price = gutter_linear_feet * 0.50
+                gutter_price = max(gutter_price, 149.00)
+                additional_results["gutter cleaning"] = round(gutter_price, 2)
+                st.session_state.inputs.update({
+                    "gutter_cleaning": "YES",
+                    "gutter_linear_feet": gutter_linear_feet,
+                })
+            elif service == "roof blow-off":
+                blow_off_hours = st.number_input("Hours for Roof Blow-Off", min_value=0, step=1, key="blow_off_hours")
+                blow_off_men = st.selectbox("Number of Men", [1, 2], key="blow_off_men")
+                if blow_off_hours == 0:
+                    st.error("I need more information to calculate the prices. Please provide: hours for roof blow-off.")
+                    continue
+                blow_off_price = (blow_off_hours * 149.00) + (blow_off_hours * 42.00 if blow_off_men == 2 else 0)
+                additional_results["roof blow-off"] = round(blow_off_price, 2)
+                st.session_state.inputs.update({
+                    "roof_blow_off": "YES",
+                    "blow_off_hours": blow_off_hours,
+                    "blow_off_men": blow_off_men,
+                })
+            elif service == "concrete cleaning":
+                concrete_sq_ft = st.number_input("Concrete Square Footage", min_value=0, step=100, key="concrete_sq_ft")
+                if concrete_sq_ft == 0:
+                    st.error("I need more information to calculate the prices. Please provide: concrete square footage.")
+                    continue
+                concrete_price = concrete_sq_ft * 0.15
+                additional_results["concrete cleaning"] = round(concrete_price, 2)
+                st.session_state.inputs.update({
+                    "concrete_cleaning": "YES",
+                    "concrete_sq_ft": concrete_sq_ft,
+                })
+            elif service == "deck/dock cleaning":
+                deck_dock_sq_ft = st.number_input("Deck/Dock Square Footage", min_value=0, step=100, key="deck_dock_sq_ft")
+                if deck_dock_sq_ft == 0:
+                    st.error("I need more information to calculate the prices. Please provide: deck/dock square footage.")
+                    continue
+                deck_dock_price = deck_dock_sq_ft * 0.15
+                additional_results["deck/dock cleaning"] = round(deck_dock_price, 2)
+                st.session_state.inputs.update({
+                    "deck_dock_cleaning": "YES",
+                    "deck_dock_sq_ft": deck_dock_sq_ft,
+                })
+            elif service == "custom items":
+                custom_item_name = st.text_input("Custom Item Name", key="custom_item_name")
+                custom_item_price = st.number_input("Custom Item Price", min_value=0.0, step=1.0, key="custom_item_price")
+                if not custom_item_name or custom_item_price == 0:
+                    st.error("I need more information to calculate the prices. Please provide: custom item name and price.")
+                    continue
+                custom_item = {"name": custom_item_name, "price": custom_item_price}
+                st.session_state.inputs["custom_items"].append(custom_item)
+                additional_results[f"custom line item ({custom_item_name})"] = round(custom_item_price, 2)
+
+        # Display Additional Results
+        for service, price in additional_results.items():
+            st.write(f"{service}: {price}")
+            st.session_state.results[service] = price
+
+        # Calculate Total
+        total = sum(st.session_state.results.values())
+        st.session_state.results["total"] = round(total, 2)
+        st.write(f"**TOTAL: {st.session_state.results['total']}**")
+
+        # Save Estimate Button
+        if st.button("Save Estimate"):
+            if not account_name:
+                st.error("Please enter an account name before saving.")
+            else:
+                save_estimate(account_name, customer_info, st.session_state.inputs, st.session_state.results)
