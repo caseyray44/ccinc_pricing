@@ -157,7 +157,7 @@ interior_monitoring = st.selectbox("Interior Monitoring?", ["NO", "YES"], key="i
 
 # Window Cleaning
 st.subheader("Window Cleaning")
-exterior_standard_windows = st.number_input("Exterior Standard Windows", min_value=0, step _
+exterior_standard_windows = st.number_input("Exterior Standard Windows", min_value=0, step=1, key="exterior_standard_windows")
 
 # Calculate Button
 if st.button("Calculate"):
