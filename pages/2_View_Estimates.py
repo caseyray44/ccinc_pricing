@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+import datetime
 
 st.set_page_config(page_title="View Saved Estimates")
 
@@ -19,7 +20,7 @@ def load_estimates():
         spreadsheet_id = st.secrets["SPREADSHEET_ID"]
         sheet = client.open_by_key(spreadsheet_id).sheet1
         records = sheet.get_all_records()
-        # DEBUG line below:
+        # Debug line:
         st.write(f"DEBUG: Found {len(records)} records in the sheet.")
         return records
     except Exception as e:
@@ -145,22 +146,32 @@ if "edit_mode" in st.session_state and st.session_state["edit_mode"]:
     st.subheader("House Washing")
     square_footage = st.number_input("Square Footage", min_value=0, step=100, value=inputs["square_footage"])
     stories = st.number_input("Stories", min_value=1, max_value=5, step=1, value=inputs["stories"])
-    siding = st.selectbox("Siding", ["Brick", "Vinyl", "Stucco", "Wood", "Aluminum"], index=["Brick", "Vinyl", "Stucco", "Wood", "Aluminum"].index(inputs["siding"]))
-    cleaning = st.selectbox("Cleaning", ["Soap/Scrub", "Soft Wash", "Pressure Wash", "Chemical Wash"], index=["Soap/Scrub", "Soft Wash", "Pressure Wash", "Chemical Wash"].index(inputs["cleaning"]))
+    siding = st.selectbox("Siding", ["Brick", "Vinyl", "Stucco", "Wood", "Aluminum"],
+                          index=["Brick", "Vinyl", "Stucco", "Wood", "Aluminum"].index(inputs["siding"]))
+    cleaning = st.selectbox("Cleaning", ["Soap/Scrub", "Soft Wash", "Pressure Wash", "Chemical Wash"],
+                            index=["Soap/Scrub", "Soft Wash", "Pressure Wash", "Chemical Wash"].index(inputs["cleaning"]))
     small_overhangs = st.number_input("Small Overhangs", min_value=0, step=1, value=inputs["small_overhangs"])
     medium_decks = st.number_input("Medium Decks", min_value=0, step=1, value=inputs["medium_decks"])
-    ladder_spots_house = st.number_input("Ladder Spots (House Washing)", min_value=0, step=1, value=inputs["ladder_spots_house"])
+    ladder_spots_house = st.number_input("Ladder Spots (House Washing)", min_value=0, step=1,
+                                         value=inputs["ladder_spots_house"])
 
     st.subheader("Pest Control")
-    ladder_spots_pest = st.number_input("Ladder Spots (Pest Control)", min_value=0, step=1, value=inputs["ladder_spots_pest"])
-    rodent_stations = st.number_input("Rodent Stations", min_value=0, step=1, value=inputs["rodent_stations"])
+    ladder_spots_pest = st.number_input("Ladder Spots (Pest Control)", min_value=0, step=1,
+                                        value=inputs["ladder_spots_pest"])
+    rodent_stations = st.number_input("Rodent Stations", min_value=0, step=1,
+                                      value=inputs["rodent_stations"])
 
     st.subheader("Window Cleaning")
-    exterior_standard_windows = st.number_input("Exterior Standard Windows", min_value=0, step=1, value=inputs["exterior_standard_windows"])
-    exterior_high_windows = st.number_input("Exterior High Windows", min_value=0, step=1, value=inputs["exterior_high_windows"])
-    interior_standard_windows = st.number_input("Interior Standard Windows", min_value=0, step=1, value=inputs["interior_standard_windows"])
-    interior_high_windows = st.number_input("Interior High Windows", min_value=0, step=1, value=inputs["interior_high_windows"])
-    tracks_sills_price = st.number_input("Tracks/Sills Price", min_value=0.0, step=1.0, value=inputs["tracks_sills_price"])
+    exterior_standard_windows = st.number_input("Exterior Standard Windows", min_value=0, step=1,
+                                                value=inputs["exterior_standard_windows"])
+    exterior_high_windows = st.number_input("Exterior High Windows", min_value=0, step=1,
+                                            value=inputs["exterior_high_windows"])
+    interior_standard_windows = st.number_input("Interior Standard Windows", min_value=0, step=1,
+                                                value=inputs["interior_standard_windows"])
+    interior_high_windows = st.number_input("Interior High Windows", min_value=0, step=1,
+                                            value=inputs["interior_high_windows"])
+    tracks_sills_price = st.number_input("Tracks/Sills Price", min_value=0.0, step=1.0,
+                                         value=inputs["tracks_sills_price"])
 
     if st.button("Calculate and Save Updated Estimate"):
         # Recalculate the estimate
@@ -220,9 +231,9 @@ if "edit_mode" in st.session_state and st.session_state["edit_mode"]:
             "tracks_sills_price": tracks_sills_price,
         }
 
-        # Save the updated estimate
         try:
-            client = get_google_sheets_client | 1_Estimate.py
+            # Fix the invalid syntax here:
+            client = get_google_sheets_client()
             spreadsheet_id = st.secrets["SPREADSHEET_ID"]
             sheet = client.open_by_key(spreadsheet_id).sheet1
             all_records = sheet.get_all_records()
@@ -232,7 +243,6 @@ if "edit_mode" in st.session_state and st.session_state["edit_mode"]:
                     row_to_update = idx
                     break
 
-            import datetime
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             customer_info_str = json.dumps(updated_customer_info)
             inputs_str = json.dumps(updated_inputs)
