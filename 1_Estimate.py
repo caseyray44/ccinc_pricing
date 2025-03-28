@@ -33,6 +33,9 @@ def save_estimate(account_name, inputs, results):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         inputs_str = json.dumps(inputs)
         results_str = json.dumps(results)
+        # Debug: Log the data being saved
+        st.write(f"Saving inputs: {inputs_str}")
+        st.write(f"Saving results: {results_str}")
 
         # If the account name exists, update the existing row; otherwise, append a new row
         if row_to_update:
@@ -350,9 +353,6 @@ if "show_additional_services" in st.session_state and st.session_state.show_addi
 
         # Display the updated pricing estimate
         display_pricing_estimate()
-
-# Display the pricing estimate if it exists (e.g., after page reload or additional services)
-display_pricing_estimate()
 
 # Save Estimate Button (only show if there are results)
 if st.session_state.results:
