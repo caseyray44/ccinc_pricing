@@ -3,12 +3,26 @@ import json
 from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from router import navigate_to
+
+# Inject custom CSS to hide sidebar page titles on mobile for this page
+st.markdown(
+    """
+    <style>
+    /* Hide sidebar page titles on mobile (screen width <= 768px) */
+    @media (max-width: 768px) {
+        [data-testid="stSidebarNav"] {
+            display: none !important;
+        }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # Google Sheets setup
 def get_google_sheets_client():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds_dict = json.loads(stSecrets["GOOGLE_CREDENTIALS"])
+    creds_dict = json.loads(st.secrets["GOOGLE_CREDENTIALS"])
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
     return client
