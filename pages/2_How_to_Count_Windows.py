@@ -1,4 +1,5 @@
 import streamlit as st
+from navigate import navigate_to_page
 
 # Initialize session state for page navigation
 if "page" not in st.session_state:
@@ -14,5 +15,4 @@ cols = st.columns(3)
 with cols[0]:
     st.image("images/top_grids_2_by_2.jpg", caption="Top Grids 2 by 2", use_container_width=True)
     if st.button("Select Top Grids 2 by 2", key="top_grids_2_by_2"):
-        st.session_state.page = "top_grids_2_by_2"
-        st.experimental_rerun()
+        navigate_to_page("top_grids_2_by_2")
