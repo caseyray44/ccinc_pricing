@@ -3,13 +3,12 @@ import json
 from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-
-st.set_page_config(page_title="CC Inc. Pricing Calculator")
+from router import navigate_to
 
 # Google Sheets setup
 def get_google_sheets_client():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds_dict = json.loads(st.secrets["GOOGLE_CREDENTIALS"])
+    creds_dict = json.loads(stSecrets["GOOGLE_CREDENTIALS"])
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
     return client
@@ -108,6 +107,15 @@ def display_pricing_estimate():
 
 # Title
 st.title("CC Inc. Pricing Calculator")
+
+# Navigation buttons
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("How to Count Windows"):
+        navigate_to("how_to_count_windows")
+with col2:
+    if st.button("View Estimates"):
+        navigate_to("view_estimates")
 
 # Account Name
 account_name = st.text_input("Account Name", placeholder="Enter account name (e.g., Rizzo)")
