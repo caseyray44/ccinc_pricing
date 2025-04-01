@@ -1,5 +1,4 @@
 import streamlit as st
-from navigate import navigate_to_page
 
 st.title("Counting Top Grids 2 by 2 Windows")
 st.write("Follow these steps to count the panes for a Top Grids 2 by 2 Window:")
@@ -18,4 +17,4 @@ st.write("- In this example, there are 6 red lines, so this window has **6 panes
 
 # Back button to return to the main "How to Count Windows" page
 if st.button("Back to Window Types"):
-    navigate_to_page("how_to_count_windows")
+    st.switch_page("pages/2_How_to_Count_Windows.py")
