@@ -2,8 +2,7 @@ import streamlit as st
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import json
-
-st.set_page_config(page_title="View Saved Estimates")
+from router import navigate_to
 
 # Google Sheets setup
 def get_google_sheets_client():
@@ -15,6 +14,15 @@ def get_google_sheets_client():
 
 # Title
 st.title("View Saved Estimates")
+
+# Navigation buttons
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("Estimate"):
+        navigate_to("estimate")
+with col2:
+    if st.button("How to Count Windows"):
+        navigate_to("how_to_count_windows")
 
 try:
     # Connect to Google Sheets
