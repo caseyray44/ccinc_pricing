@@ -14,14 +14,14 @@ if st.session_state.window_type_page == "main":
 
     # Top Grids 2 by 2 in the first column
     with cols[0]:
-        st.image("/images/top_grids_2_by_2.jpg", caption="Top Grids 2 by 2", use_container_width=True)
+        st.image("images/top_grids_2_by_2.jpg", caption="Top Grids 2 by 2", use_container_width=True)
         if st.button("Select", key="top_grids_2_by_2"):
             st.session_state.window_type_page = "top_grids_2_by_2"
             st.rerun()
 
     # Single Window in the second column
     with cols[1]:
-        st.image("/images/single_window.jpg", caption="Single Window", use_container_width=True)
+        st.image("images/single_window.jpg", caption="Single Window", use_container_width=True)
         if st.button("Select", key="single_window"):
             st.session_state.window_type_page = "single_window"
             st.rerun()
@@ -32,10 +32,10 @@ elif st.session_state.window_type_page == "top_grids_2_by_2":
     st.write("Follow these steps to count the panes for a Top Grids 2 by 2 Window:")
 
     # Display the original image for reference
-    st.image("/images/top_grids_2_by_2.jpg", caption="Top Grids 2 by 2 Window", use_container_width=True)
+    st.image("images/top_grids_2_by_2.jpg", caption="Top Grids 2 by 2 Window", use_container_width=True)
 
     # Display the annotated image to show how to count panes
-    st.image("/images/top_grids_2_by_2_count.jpg", caption="Counting the Panes", use_container_width=True)
+    st.image("images/top_grids_2_by_2_count.jpg", caption="Counting the Panes", use_container_width=True)
 
     # Instructions
     st.write("### Instructions")
@@ -54,7 +54,7 @@ elif st.session_state.window_type_page == "single_window":
     st.write("Follow these steps to count the panes for a Single Window:")
 
     # Display the annotated image to show how to count panes
-    st.image("/images/single_window_counted.jpg", caption="Counting the Panes", use_container_width=True)
+    st.image("images/single_window_counted.png", caption="Counting the Panes", use_container_width=True)
 
     # Instructions for the counted image
     st.write("### Instructions")
@@ -62,7 +62,7 @@ elif st.session_state.window_type_page == "single_window":
     st.write("- In this example, there’s **1 pane of glass**.")
 
     # Display the divided image with a note
-    st.image("/images/single_window_divided.jpg", caption="Divided Single Window", use_container_width=True)
+    st.image("images/single_window_divided.jpg", caption="Divided Single Window", use_container_width=True)
     st.write("- If the windows are large, the panes of glass will be divided such as in this example.")
     st.write("- In this example, this is **three panes of glass**.")
 
