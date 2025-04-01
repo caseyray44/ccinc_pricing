@@ -4,14 +4,17 @@ from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-# Inject custom CSS to hide sidebar page titles on mobile
+# Inject custom CSS to hide sidebar page titles on mobile for this page
 st.markdown(
     """
     <style>
+    /* Hide sidebar page titles on mobile (screen width <= 768px) */
     @media (max-width: 768px) {
+        /* Target the container of the page titles in mobile view */
         div[data-testid="stSidebarNavItems"] > div {
             display: none !important;
         }
+        /* Ensure the hamburger menu remains visible */
         div[data-testid="stSidebarNav"] {
             display: block !important;
         }
@@ -33,19 +36,26 @@ def save_estimate(account_name, inputs, results):
     try:
         client = get_google_sheets_client()
         spreadsheet_id = st.secrets["SPREADSHEET_ID"]
-        st.write(f"Using Spreadsheet ID: {spreadsheet_id}")
+        st.write(f"Using Spreadsheet ID: {spreadsheet_id}")  # Debug message
         sheet = client.open_by_key(spreadsheet_id).sheet1
+
+        # Check if the account name already exists
         all_records = sheet.get_all_records()
         row_to_update = None
-        for idx, record in enumerate(all_records, start=2):
+        for idx, record in enumerate(all_records, start=2):  # Start at row 2 (after header)
             if record["Account Name"] == account_name:
                 row_to_update = idx
                 break
+
+        # Prepare the data to save
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         inputs_str = json.dumps(inputs)
         results_str = json.dumps(results)
+        # Debug: Log the data being saved
         st.write(f"Saving inputs: {inputs_str}")
         st.write(f"Saving results: {results_str}")
+
+        # If the account name exists, update the existing row; otherwise, append a new row
         if row_to_update:
             sheet.update(f"A{row_to_update}:D{row_to_update}", [[account_name, timestamp, inputs_str, results_str]])
         else:
@@ -78,6 +88,7 @@ if "inputs" not in st.session_state:
         "interior_standard_windows": 0,
         "interior_high_windows": 0,
         "tracks_sills_price": 99.0,
+        # Additional services
         "roof_treatment": "NO",
         "roof_type": "Asphalt",
         "roof_sq_ft": 0,
@@ -92,7 +103,7 @@ if "inputs" not in st.session_state:
         "deck_dock_cleaning": "NO",
         "deck_dock_sq_ft": 0,
         "custom_items": [],
-        "very_dirty": False,
+        "very_dirty": False,  # Added for house washing
     }
 
 if "results" not in st.session_state:
@@ -102,12 +113,15 @@ if "results" not in st.session_state:
 def display_pricing_estimate():
     if st.session_state.results:
         st.header("Pricing Estimate")
+        # Mandatory services (always display these if they exist)
         for service in ["house_washing", "pest_control", "rodent_control", "exterior_windows", "interior_windows", "tracks_sills"]:
             if service in st.session_state.results:
                 st.write(f"{service.replace('_', ' ')}: ${st.session_state.results[service]:.2f}")
+        # Additional services
         for service, price in st.session_state.results.items():
             if service not in ["house_washing", "pest_control", "rodent_control", "exterior_windows", "interior_windows", "tracks_sills", "total"]:
                 st.write(f"{service}: ${price:.2f}")
+        # Total
         if "total" in st.session_state.results:
             st.write(f"**TOTAL: ${st.session_state.results['total']:.2f}**")
 
@@ -155,7 +169,9 @@ tracks_sills_price = st.number_input("Tracks/Sills Price (minimum $99)", min_val
 
 # Calculate Button
 if st.button("Calculate"):
+    # Input Validation
     missing_details = []
+    # House Washing
     if square_footage == 0:
         missing_details.append("square footage for house washing")
     if not siding:
@@ -164,29 +180,30 @@ if st.button("Calculate"):
         missing_details.append("cleaning type for house washing")
     if ladder_work == "YES" and ladder_spots_house == 0:
         missing_details.append("number of ladder spots for house washing (since ladder work is YES)")
+    # Window Cleaning
     if tracks_sills_price == 0:
         missing_details.append("tracks/sills price (or confirm to use default $99)")
 
     if missing_details:
         st.error(f"I need more information to calculate the prices. Please provide: {', '.join(missing_details)}.")
     else:
-        # House Washing Calculation (New Bracketed Logic)
-        if square_footage <= 1500:
-            base_price = 300.00
-        elif square_footage <= 2500:
-            base_price = 450.00
-        elif square_footage <= 3500:
-            base_price = 700.00
-        elif square_footage <= 4500:
+        # House Washing Calculation (Adjusted Bracketed Logic)
+        if square_footage <= 1000:
+            base_price = 250.00
+        elif square_footage <= 2000:
+            base_price = 400.00
+        elif square_footage <= 3000:
+            base_price = 600.00
+        elif square_footage <= 4000:
             base_price = 1000.00
         else:
             base_price = 1200.00
 
-        stories_addon = 50.00 * max(0, (stories - 1.0) / 0.5)
-        ladder_price = ladder_spots_house * 40.00
-        overhangs_price = (small_overhangs * 10.00) + (medium_overhangs * 20.00) + (large_overhangs * 30.00)
-        decks_price = (small_decks * 10.00) + (medium_decks * 15.00) + (large_decks * 25.00)
-        complexity_addon = 25.00 if (siding in ["Shiplap", "Hardie/LP", "Log/Half-Log"] or ladder_work == "YES") else 0.00
+        stories_addon = 50.00 * max(0, (stories - 1.0) / 0.5)  # $50 per half-story above 1
+        ladder_price = ladder_spots_house * 50.00
+        overhangs_price = (small_overhangs * 15.00) + (medium_overhangs * 25.00) + (large_overhangs * 35.00)
+        decks_price = (small_decks * 10.00) + (medium_decks * 20.00) + (large_decks * 30.00)
+        complexity_addon = 50.00 if (siding in ["Shiplap", "Hardie/LP", "Log/Half-Log"] or ladder_work == "YES") else 0.00
         cleaning_addon = 50.00 if cleaning == "SH" else 0.00
         dirty_addon = 150.00 if very_dirty else 0.00
 
@@ -195,8 +212,8 @@ if st.button("Calculate"):
             decks_price + complexity_addon + cleaning_addon + dirty_addon
         )
 
-        # Pest Control Calculation (Unchanged)
-        base_price = square_footage * 0.045
+        # Pest Control Calculation (Updated to 0.07)
+        base_price = square_footage * 0.07  # Changed from 0.045
         base_price = min(base_price, 200.00)
         pest_overhangs_price = (small_overhangs * 15.00) + (medium_overhangs * 20.00) + (large_overhangs * 25.00)
         pest_decks_price = (small_decks * 10.00) + (medium_decks * 20.00) + (large_decks * 25.00)
@@ -357,13 +374,14 @@ if "show_additional_services" in st.session_state and st.session_state.show_addi
         # Update session state with additional results
         if additional_results:
             st.session_state.results.update(additional_results)
+            # Recalculate total
             total = sum(st.session_state.results.values()) - st.session_state.results.get("total", 0)
             st.session_state.results["total"] = round(total, 2)
 
         # Display the updated pricing estimate
         display_pricing_estimate()
 
-# Save Estimate Button
+# Save Estimate Button (only show if there are results)
 if st.session_state.results:
     if st.button("Save Estimate"):
         if not account_name:
