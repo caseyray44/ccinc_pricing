@@ -127,15 +127,6 @@ def display_pricing_estimate():
 # Title
 st.title("CC Inc. Pricing Calculator")
 
-# Navigation buttons
-col1, col2 = st.columns(2)
-with col1:
-    if st.button("How to Count Windows"):
-        navigate_to("how_to_count_windows")
-with col2:
-    if st.button("View Estimates"):
-        navigate_to("view_estimates")
-
 # Account Name
 account_name = st.text_input("Account Name", placeholder="Enter account name (e.g., Rizzo)")
 
@@ -321,7 +312,7 @@ if "show_additional_services" in st.session_state and st.session_state.show_addi
                     continue
                 gutter_price = gutter_linear_feet * 0.50
                 gutter_price = max(gutter_price, 149.00)
-                additional_results["gutter cleaning"] = round(gutter_price, 2)
+                additional_results["gutter gutter cleaning"] = round(gutter_price, 2)
                 st.session_state.inputs.update({
                     "gutter_cleaning": "YES",
                     "gutter_linear_feet": gutter_linear_feet,
