@@ -4,6 +4,26 @@ from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
+# Inject custom CSS to hide sidebar page titles on mobile for this page
+st.markdown(
+    """
+    <style>
+    /* Hide sidebar page titles on mobile (screen width <= 768px) */
+    @media (max-width: 768px) {
+        /* Target the container of the page titles in mobile view */
+        div[data-testid="stSidebarNavItems"] > div {
+            display: none !important;
+        }
+        /* Ensure the hamburger menu remains visible */
+        div[data-testid="stSidebarNav"] {
+            display: block !important;
+        }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Google Sheets setup
 def get_google_sheets_client():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
