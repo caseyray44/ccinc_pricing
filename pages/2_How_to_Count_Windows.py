@@ -7,26 +7,34 @@ st.markdown(
     /* Style for the image containers */
     .image-container {
         text-align: center;
-        padding: 10px;
+        padding: 15px;
+        min-height: 300px; /* Ensure enough vertical space */
     }
 
     /* Style for the images */
     .image-container img {
-        min-width: 200px; /* Minimum width to ensure images aren't too small */
+        min-width: 300px; /* Minimum width to ensure images aren't too small */
         max-width: 100%; /* Ensure images scale down on smaller screens */
         height: auto; /* Maintain aspect ratio */
         object-fit: contain; /* Ensure the entire image is visible */
     }
 
+    /* Specific adjustment for Sliding Glass Door image */
+    .image-container:nth-child(3) img {
+        min-width: 300px; /* Enforce minimum width for the third image (Sliding Glass Door) */
+        max-height: 300px; /* Limit height to prevent stretching */
+    }
+
     /* Style for the buttons */
     .stButton > button {
         width: 100%; /* Make buttons full width of the column */
-        margin-top: 5px; /* Add some spacing above the button */
+        margin-top: 10px; /* Add spacing above the button */
     }
 
-    /* Adjust column spacing */
+    /* Adjust column spacing and width */
     .stColumns > div {
-        padding: 10px; /* Add padding between columns */
+        padding: 15px; /* Increased padding between columns */
+        flex: 1 1 50%; /* Adjust column width to 50% for 2-column layout */
     }
     </style>
     """,
@@ -42,8 +50,8 @@ if st.session_state.window_type_page == "main":
     st.title("How to Count Windows")
     st.write("Click on a window type to learn how to count its panes.")
 
-    # Create a grid layout with 3 columns
-    cols = st.columns(3)
+    # Create a grid layout with 2 columns
+    cols = st.columns(2)
 
     # Top Grids 2 by 2 in the first column
     with cols[0]:
@@ -54,7 +62,7 @@ if st.session_state.window_type_page == "main":
             st.session_state.window_type_page = "top_grids_2_by_2"
             st.rerun()
 
-    # Single Window in the second column
+    # Single Window and Sliding Glass Door in the second column (stacked vertically)
     with cols[1]:
         st.markdown('<div class="image-container">', unsafe_allow_html=True)
         st.image("images/single_window.jpg", caption="Single Window", use_container_width=False)
@@ -63,8 +71,6 @@ if st.session_state.window_type_page == "main":
             st.session_state.window_type_page = "single_window"
             st.rerun()
 
-    # Sliding Glass Door in the third column
-    with cols[2]:
         st.markdown('<div class="image-container">', unsafe_allow_html=True)
         st.image("images/slidinsliding_glass_door.jpg", caption="Sliding Glass Door", use_container_width=False)
         st.markdown('</div>', unsafe_allow_html=True)
