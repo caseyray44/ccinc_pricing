@@ -78,10 +78,19 @@ elif st.session_state.window_type_page == "single_window":
         st.session_state.window_type_page = "main"
         st.rerun()
 
-# Render the Sliding Glass Door page content (placeholder for now)
+# Render the Sliding Glass Door page content
 elif st.session_state.window_type_page == "sliding_glass_door":
     st.title("Counting Sliding Glass Doors")
-    st.write("This section will show how to count panes for a Sliding Glass Door.")
+    st.write("Follow these steps to count the panes for a Sliding Glass Door:")
+
+    # Display the annotated image to show how to count panes
+    st.image("images/slidinsliding_glass_door_count.jpg", caption="Counting the Panes", use_container_width=True)
+
+    # Instructions
+    st.write("### Instructions")
+    st.write("- Doors we break into two panes of glass. The blue line represents the split and the red lines represent each pane of glass.")
+    st.write("- In this example, there are **8 panes of glass**.")
+
     # Back button to return to the main "How to Count Windows" page
     if st.button("Back to Window Types"):
         st.session_state.window_type_page = "main"
