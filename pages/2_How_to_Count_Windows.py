@@ -1,6 +1,6 @@
 import streamlit as st
 
-# Inject custom CSS to improve image layout
+# Inject custom CSS to improve image layout and positioning
 st.markdown(
     """
     <style>
@@ -35,6 +35,12 @@ st.markdown(
     .stColumns > div {
         padding: 15px; /* Increased padding between columns */
         flex: 1 1 50%; /* Adjust column width to 50% for 2-column layout */
+    }
+
+    /* Reduce top padding/margin to move columns closer to the title */
+    .stColumns {
+        margin-top: 0px !important; /* Remove top margin */
+        padding-top: 0px !important; /* Remove top padding */
     }
     </style>
     """,
