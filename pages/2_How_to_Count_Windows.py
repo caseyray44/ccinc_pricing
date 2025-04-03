@@ -26,6 +26,13 @@ if st.session_state.window_type_page == "main":
             st.session_state.window_type_page = "single_window"
             st.rerun()
 
+    # Sliding Glass Door in the third column
+    with cols[2]:
+        st.image("images/slidinsliding_glass_door.jpg", caption="Sliding Glass Door", use_container_width=True)
+        if st.button("Select", key="sliding_glass_door"):
+            st.session_state.window_type_page = "sliding_glass_door"
+            st.rerun()
+
 # Render the Top Grids 2 by 2 page content
 elif st.session_state.window_type_page == "top_grids_2_by_2":
     st.title("Counting Top Grids 2 by 2 Windows")
@@ -66,6 +73,15 @@ elif st.session_state.window_type_page == "single_window":
     st.write("- If the windows are large, the panes of glass will be divided such as in this example.")
     st.write("- In this example, this is **three panes of glass**.")
 
+    # Back button to return to the main "How to Count Windows" page
+    if st.button("Back to Window Types"):
+        st.session_state.window_type_page = "main"
+        st.rerun()
+
+# Render the Sliding Glass Door page content (placeholder for now)
+elif st.session_state.window_type_page == "sliding_glass_door":
+    st.title("Counting Sliding Glass Doors")
+    st.write("This section will show how to count panes for a Sliding Glass Door.")
     # Back button to return to the main "How to Count Windows" page
     if st.button("Back to Window Types"):
         st.session_state.window_type_page = "main"
