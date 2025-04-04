@@ -37,9 +37,9 @@ st.markdown(
         flex: 1 1 50%; /* Adjust column width to 50% for 2-column layout */
     }
 
-    /* Remove top padding/margin to move columns closer to the title */
+    /* Remove top padding/margin and pull columns up closer to the title */
     .stColumns {
-        margin-top: 0px !important; /* Remove top margin */
+        margin-top: -20px !important; /* Use negative margin to pull columns up */
         padding-top: 0px !important; /* Remove top padding */
     }
 
@@ -59,6 +59,12 @@ st.markdown(
     .stApp {
         padding-top: 0px !important; /* Remove top padding from the root container */
         margin-top: 0px !important; /* Remove top margin from the root container */
+    }
+
+    /* Target any additional parent containers that might add space */
+    .main > div {
+        padding-top: 0px !important; /* Remove top padding from parent containers */
+        margin-top: 0px !important; /* Remove top margin from parent containers */
     }
     </style>
     """,
