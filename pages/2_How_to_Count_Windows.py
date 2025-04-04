@@ -7,13 +7,13 @@ st.markdown(
     /* Style for the image containers */
     .image-container {
         text-align: center;
-        padding: 10px;
-        min-height: 250px; /* Reduced to fit more items vertically */
+        padding: 15px;
+        min-height: 300px; /* Ensure enough vertical space */
     }
 
     /* Style for the images */
     .image-container img {
-        min-width: 200px; /* Reduced minimum width for 3-column layout */
+        min-width: 300px; /* Minimum width to ensure images aren't too small */
         max-width: 100%; /* Ensure images scale down on smaller screens */
         height: auto; /* Maintain aspect ratio */
         object-fit: contain; /* Ensure the entire image is visible */
@@ -22,13 +22,13 @@ st.markdown(
     /* Style for the buttons */
     .stButton > button {
         width: 100%; /* Make buttons full width of the column */
-        margin-top: 5px; /* Reduced spacing above the button */
+        margin-top: 10px; /* Add spacing above the button */
     }
 
     /* Adjust column spacing and width */
     .stColumns > div {
-        padding: 10px; /* Reduced padding between columns */
-        flex: 1 1 33.33%; /* Adjust column width to 33.33% for 3-column layout */
+        padding: 15px; /* Increased padding between columns */
+        flex: 1 1 50%; /* Adjust column width to 50% for 2-column layout */
     }
     </style>
     """,
@@ -44,9 +44,9 @@ if st.session_state.window_type_page == "main":
     st.title("How to Count Windows")
     st.write("Click on a window type to learn how to count its panes.")
 
-    # Create a 3-column grid layout with two rows
+    # Create a 2x2 grid layout with two rows of two columns each
     # First row
-    row1_cols = st.columns(3)
+    row1_cols = st.columns(2)
 
     # Top Grids 2 by 2 in the first column of the first row
     with row1_cols[0]:
@@ -66,8 +66,11 @@ if st.session_state.window_type_page == "main":
             st.session_state.window_type_page = "single_window"
             st.rerun()
 
-    # Sliding Glass Door in the third column of the first row
-    with row1_cols[2]:
+    # Second row
+    row2_cols = st.columns(2)
+
+    # Sliding Glass Door in the first column of the second row
+    with row2_cols[0]:
         st.markdown('<div class="image-container">', unsafe_allow_html=True)
         st.image("images/slidinsliding_glass_door.jpg", caption="Sliding Glass Door", use_container_width=False)
         st.markdown('</div>', unsafe_allow_html=True)
@@ -75,23 +78,14 @@ if st.session_state.window_type_page == "main":
             st.session_state.window_type_page = "sliding_glass_door"
             st.rerun()
 
-    # Second row
-    row2_cols = st.columns(3)
-
-    # Frenchie in the first column of the second row
-    with row2_cols[0]:
+    # Frenchie in the second column of the second row
+    with row2_cols[1]:
         st.markdown('<div class="image-container">', unsafe_allow_html=True)
         st.image("images/frenchie.jpg", caption="Frenchie", use_container_width=False)
         st.markdown('</div>', unsafe_allow_html=True)
         if st.button("Select", key="frenchie"):
             st.session_state.window_type_page = "frenchie"
             st.rerun()
-
-    # Leave the second and third columns of the second row empty for now
-    with row2_cols[1]:
-        pass
-    with row2_cols[2]:
-        pass
 
 # Render the Top Grids 2 by 2 page content
 elif st.session_state.window_type_page == "top_grids_2_by_2":
