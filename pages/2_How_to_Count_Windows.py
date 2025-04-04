@@ -19,12 +19,6 @@ st.markdown(
         object-fit: contain; /* Ensure the entire image is visible */
     }
 
-    /* Specific adjustment for Sliding Glass Door and Frenchie images */
-    .image-container:nth-child(3) img, .image-container:nth-child(4) img {
-        min-width: 300px; /* Enforce minimum width for the third and fourth images */
-        max-height: 300px; /* Limit height to prevent stretching */
-    }
-
     /* Style for the buttons */
     .stButton > button {
         width: 100%; /* Make buttons full width of the column */
@@ -50,11 +44,12 @@ if st.session_state.window_type_page == "main":
     st.title("How to Count Windows")
     st.write("Click on a window type to learn how to count its panes.")
 
-    # Create a grid layout with 2 columns
-    cols = st.columns(2)
+    # Create a 2x2 grid layout with two rows of two columns each
+    # First row
+    row1_cols = st.columns(2)
 
-    # Top Grids 2 by 2 in the first column
-    with cols[0]:
+    # Top Grids 2 by 2 in the first column of the first row
+    with row1_cols[0]:
         st.markdown('<div class="image-container">', unsafe_allow_html=True)
         st.image("images/top_grids_2_by_2.jpg", caption="Top Grids 2 by 2", use_container_width=False)
         st.markdown('</div>', unsafe_allow_html=True)
@@ -62,8 +57,8 @@ if st.session_state.window_type_page == "main":
             st.session_state.window_type_page = "top_grids_2_by_2"
             st.rerun()
 
-    # Single Window, Sliding Glass Door, and Frenchie in the second column (stacked vertically)
-    with cols[1]:
+    # Single Window in the second column of the first row
+    with row1_cols[1]:
         st.markdown('<div class="image-container">', unsafe_allow_html=True)
         st.image("images/single_window.jpg", caption="Single Window", use_container_width=False)
         st.markdown('</div>', unsafe_allow_html=True)
@@ -71,6 +66,11 @@ if st.session_state.window_type_page == "main":
             st.session_state.window_type_page = "single_window"
             st.rerun()
 
+    # Second row
+    row2_cols = st.columns(2)
+
+    # Sliding Glass Door in the first column of the second row
+    with row2_cols[0]:
         st.markdown('<div class="image-container">', unsafe_allow_html=True)
         st.image("images/slidinsliding_glass_door.jpg", caption="Sliding Glass Door", use_container_width=False)
         st.markdown('</div>', unsafe_allow_html=True)
@@ -78,6 +78,8 @@ if st.session_state.window_type_page == "main":
             st.session_state.window_type_page = "sliding_glass_door"
             st.rerun()
 
+    # Frenchie in the second column of the second row
+    with row2_cols[1]:
         st.markdown('<div class="image-container">', unsafe_allow_html=True)
         st.image("images/frenchie.jpg", caption="Frenchie", use_container_width=False)
         st.markdown('</div>', unsafe_allow_html=True)
