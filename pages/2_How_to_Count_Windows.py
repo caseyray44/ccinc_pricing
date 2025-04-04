@@ -42,17 +42,6 @@ st.markdown(
         margin-top: 0px !important; /* Remove top margin */
         padding-top: 0px !important; /* Remove top padding */
     }
-
-    /* Reduce margin/padding around the title and description */
-    .stMarkdown {
-        margin-bottom: 5px !important; /* Reduce space below the title and description */
-        padding-bottom: 5px !important; /* Reduce padding below the title and description */
-    }
-
-    /* Ensure the main content block has no extra top padding */
-    .block-container {
-        padding-top: 0px !important; /* Remove top padding from the main content block */
-    }
     </style>
     """,
     unsafe_allow_html=True
