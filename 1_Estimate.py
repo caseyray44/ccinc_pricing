@@ -134,7 +134,7 @@ st.subheader("Rodent Control")
 rodent_stations = st.number_input("Rodent Stations", min_value=0, step=1, value=4, key="rodent_stations")
 interior_monitoring = st.checkbox("Interior Monitoring", key="interior_monitoring")
 
-# Window Cleaning (Restored to Original)
+# Window Cleaning (Unchanged)
 st.subheader("Window Cleaning")
 exterior_standard_windows = st.number_input("Exterior Standard Windows", min_value=0, step=1, key="exterior_standard_windows")
 exterior_high_windows = st.number_input("Exterior High Windows", min_value=0, step=1, key="exterior_high_windows")
@@ -168,6 +168,7 @@ if st.button("Calculate"):
             house_condition_adder = 152
         house_washing_total = (house_sq_ft * house_base_rate) + house_condition_adder
         house_washing_total = max(house_washing_total, 449)  # Individual service minimum
+        st.write(f"DEBUG: House Washing - Sq Ft: {house_sq_ft}, Base Rate: {house_base_rate}, Condition Adder: {house_condition_adder}, Total: {house_washing_total}")
 
         # Pest Control Calculation
         treated_area = total_perimeter * (stories * 10)
@@ -194,7 +195,7 @@ if st.button("Calculate"):
         interior_monitoring_price = 50.00 if interior_monitoring else 0.00
         rodent_control_total = rodent_base_price + rodent_stations_price + interior_monitoring_price
 
-        # Window Cleaning Calculation (Restored to Original)
+        # Window Cleaning Calculation (Unchanged)
         exterior_windows_total = (exterior_standard_windows * 3.30) + (exterior_high_windows * 5.25)
         if exterior_windows_total > 0 and exterior_windows_total < 149.00:
             exterior_windows_total = 149.00
