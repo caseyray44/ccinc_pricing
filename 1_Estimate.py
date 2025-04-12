@@ -58,19 +58,13 @@ def save_estimate(account_name, inputs, results):
 # Initialize session state
 if "inputs" not in st.session_state:
     st.session_state.inputs = {
-        "square_footage": 0,
+        "total_perimeter": 0,
+        "max_height": 0,
+        "house_dirtiness": "Light",
         "stories": 1.0,
-        "siding": "Brick",
-        "cleaning": "Soap/Scrub",
-        "small_overhangs": 0,
-        "medium_overhangs": 0,
-        "large_overhangs": 0,
-        "small_decks": 0,
-        "medium_decks": 0,
-        "large_decks": 0,
-        "ladder_work": "NO",
-        "ladder_spots_house": 0,
+        "pest_infestation": "Light",
         "ladder_spots_pest": 0,
+        "structure_type": "Main",
         "rodent_stations": 4,
         "interior_monitoring": False,
         "exterior_standard_windows": 0,
@@ -92,8 +86,6 @@ if "inputs" not in st.session_state:
         "deck_dock_cleaning": "NO",
         "deck_dock_sq_ft": 0,
         "custom_items": [],
-        "very_dirty": False,
-        "super_easy": False,  # New field
     }
 
 if "results" not in st.session_state:
@@ -121,33 +113,28 @@ account_name = st.text_input("Account Name", placeholder="Enter account name (e.
 # Estimate Details
 st.header("Estimate Details")
 
+# Shared Inputs for House Washing and Pest Control
+st.subheader("Property Measurements")
+total_perimeter = st.number_input("Total Perimeter (ft)", min_value=0.0, step=1.0, key="total_perimeter")
+stories = st.selectbox("Number of Stories", [1.0, 1.5, 2.0, 2.5, 3.0], key="stories")
+
 # House Washing
 st.subheader("House Washing")
-square_footage = st.number_input("Square Footage", min_value=0, step=100, key="square_footage")
-stories = st.selectbox("Stories", [1.0, 1.5, 2.0, 2.5, 3.0], key="stories")
-siding = st.selectbox("Siding", ["Brick", "Metal", "Vinyl", "Shiplap", "Hardie/LP", "Log/Half-Log"], key="siding")
-cleaning = st.selectbox("Cleaning", ["Soap/Scrub", "SH"], key="cleaning")
-small_overhangs = st.number_input("Small Overhangs", min_value=0, step=1, key="small_overhangs")
-medium_overhangs = st.number_input("Medium Overhangs", min_value=0, step=1, key="medium_overhangs")
-large_overhangs = st.number_input("Large Overhangs", min_value=0, step=1, key="large_overhangs")
-small_decks = st.number_input("Small Decks", min_value=0, step=1, key="small_decks")
-medium_decks = st.number_input("Medium Decks", min_value=0, step=1, key="medium_decks")
-large_decks = st.number_input("Large Decks", min_value=0, step=1, key="large_decks")
-ladder_work = st.selectbox("Ladder Work Required?", ["NO", "YES"], key="ladder_work")
-ladder_spots_house = st.number_input("Ladder Spots (House Washing)", min_value=0, step=1, key="ladder_spots_house") if ladder_work == "YES" else 0
-very_dirty = st.checkbox("Very Dirty Job (e.g., spider webs, heavy grime)", key="very_dirty")
-super_easy = st.checkbox("Super Easy Job (e.g., flat shop, quick clean)", key="super_easy")
+max_height = st.number_input("Max Height (ft)", min_value=0.0, step=1.0, key="max_height")
+house_dirtiness = st.radio("Dirtiness", ["Light", "Medium", "Heavy"], key="house_dirtiness")
 
 # Pest Control
 st.subheader("Pest Control")
+pest_infestation = st.radio("Infestation Level", ["Light", "Medium", "Heavy"], key="pest_infestation")
 ladder_spots_pest = st.number_input("Ladder Spots (Pest Control)", min_value=0, step=1, key="ladder_spots_pest")
+structure_type = st.radio("Structure Type", ["Main", "Additional"], key="structure_type")
 
-# Rodent Control
+# Rodent Control (Unchanged)
 st.subheader("Rodent Control")
 rodent_stations = st.number_input("Rodent Stations", min_value=0, step=1, value=4, key="rodent_stations")
 interior_monitoring = st.checkbox("Interior Monitoring", key="interior_monitoring")
 
-# Window Cleaning
+# Window Cleaning (Unchanged)
 st.subheader("Window Cleaning")
 exterior_standard_windows = st.number_input("Exterior Standard Windows", min_value=0, step=1, key="exterior_standard_windows")
 exterior_high_windows = st.number_input("Exterior High Windows", min_value=0, step=1, key="exterior_high_windows")
@@ -158,14 +145,10 @@ tracks_sills_price = st.number_input("Tracks/Sills Price (minimum $99)", min_val
 # Calculate Button
 if st.button("Calculate"):
     missing_details = []
-    if square_footage == 0:
-        missing_details.append("square footage for house washing")
-    if not siding:
-        missing_details.append("siding type for house washing")
-    if not cleaning:
-        missing_details.append("cleaning type for house washing")
-    if ladder_work == "YES" and ladder_spots_house == 0:
-        missing_details.append("number of ladder spots for house washing (since ladder work is YES)")
+    if total_perimeter == 0:
+        missing_details.append("total perimeter")
+    if max_height == 0:
+        missing_details.append("max height for house washing")
     if tracks_sills_price == 0:
         missing_details.append("tracks/sills price (or confirm to use default $99)")
 
@@ -173,49 +156,45 @@ if st.button("Calculate"):
         st.error(f"I need more information to calculate the prices. Please provide: {', '.join(missing_details)}.")
     else:
         # House Washing Calculation
-        if square_footage <= 1000:
-            base_price = 250.00
-        elif square_footage <= 2000:
-            base_price = 450.00
-        elif square_footage <= 3000:
-            base_price = 500.00  # Adjusted from 600
-        elif square_footage <= 4000:
-            base_price = 1000.00
+        house_sq_ft = total_perimeter * max_height
+        if house_sq_ft < 6000:
+            house_base_rate = 0.094
         else:
-            base_price = 1200.00
-
-        stories_addon = 50.00 * max(0, (stories - 1.0) / 0.5)
-        ladder_price = ladder_spots_house * 50.00
-        overhangs_price = (small_overhangs * 15.00) + (medium_overhangs * 25.00) + (large_overhangs * 35.00)
-        decks_price = (small_decks * 10.00) + (medium_decks * 20.00) + (large_decks * 30.00)
-        complexity_addon = 50.00 if (siding in ["Shiplap", "Hardie/LP", "Log/Half-Log"] or ladder_work == "YES") else 0.00
-        cleaning_addon = 50.00 if cleaning == "SH" else 0.00
-        dirty_addon = 150.00 if very_dirty else 0.00
-        easy_addon = -100.00 if super_easy else 0.00
-
-        house_washing_total = (
-            base_price + stories_addon + ladder_price + overhangs_price + 
-            decks_price + complexity_addon + cleaning_addon + dirty_addon + easy_addon
-        )
+            house_base_rate = 0.101
+        house_condition_adder = 0
+        if house_dirtiness == "Medium":
+            house_condition_adder = 76
+        elif house_dirtiness == "Heavy":
+            house_condition_adder = 152
+        house_washing_total = (house_sq_ft * house_base_rate) + house_condition_adder
+        house_washing_total = max(house_washing_total, 419)
 
         # Pest Control Calculation
-        base_price = square_footage * 0.07
-        base_price = min(base_price, 200.00)
-        pest_overhangs_price = (small_overhangs * 15.00) + (medium_overhangs * 20.00) + (large_overhangs * 25.00)
-        pest_decks_price = (small_decks * 10.00) + (medium_decks * 20.00) + (large_decks * 25.00)
-        pest_ladder_price = ladder_spots_pest * 75.00
-        pest_total = base_price + pest_overhangs_price + pest_decks_price + pest_ladder_price
-        if pest_total < 119.00:
-            pest_total = 119.00
+        treated_area = total_perimeter * (stories * 10)
+        if treated_area < 6000:
+            pest_base_rate = 0.049 if structure_type == "Additional" else 0.033
+        else:
+            pest_base_rate = 0.023
+        pest_infestation_adder = 0
+        if pest_infestation == "Medium":
+            pest_infestation_adder = 50
+        elif pest_infestation == "Heavy":
+            pest_infestation_adder = 100
+        ladder_cost = 25 if ladder_spots_pest > 0 else 0
+        ladder_cost += (ladder_spots_pest - 1) * 15 if ladder_spots_pest > 1 else 0
+        pest_total = (treated_area * pest_base_rate) + pest_infestation_adder + ladder_cost
+        if structure_type == "Main":
+            pest_minimum_price = 179 if treated_area < 3000 else 145
+            pest_total = max(pest_total, pest_minimum_price)
 
-        # Rodent Control Calculation
+        # Rodent Control Calculation (Unchanged)
         rodent_base_price = 399.00
         extra_stations = max(0, rodent_stations - 4)
         rodent_stations_price = extra_stations * 30.00
         interior_monitoring_price = 50.00 if interior_monitoring else 0.00
         rodent_control_total = rodent_base_price + rodent_stations_price + interior_monitoring_price
 
-        # Window Cleaning Calculation (Fixed)
+        # Window Cleaning Calculation (Unchanged)
         exterior_windows_total = (exterior_standard_windows * 3.30) + (exterior_high_windows * 5.25)
         if exterior_windows_total > 0 and exterior_windows_total < 149.00:
             exterior_windows_total = 149.00
@@ -244,19 +223,13 @@ if st.button("Calculate"):
 
         # Update inputs in session state
         st.session_state.inputs.update({
-            "square_footage": square_footage,
+            "total_perimeter": total_perimeter,
+            "max_height": max_height,
+            "house_dirtiness": house_dirtiness,
             "stories": stories,
-            "siding": siding,
-            "cleaning": cleaning,
-            "small_overhangs": small_overhangs,
-            "medium_overhangs": medium_overhangs,
-            "large_overhangs": large_overhangs,
-            "small_decks": small_decks,
-            "medium_decks": medium_decks,
-            "large_decks": large_decks,
-            "ladder_work": ladder_work,
-            "ladder_spots_house": ladder_spots_house,
+            "pest_infestation": pest_infestation,
             "ladder_spots_pest": ladder_spots_pest,
+            "structure_type": structure_type,
             "rodent_stations": rodent_stations,
             "interior_monitoring": interior_monitoring,
             "exterior_standard_windows": exterior_standard_windows,
@@ -264,8 +237,6 @@ if st.button("Calculate"):
             "interior_standard_windows": interior_standard_windows,
             "interior_high_windows": interior_high_windows,
             "tracks_sills_price": tracks_sills_price,
-            "very_dirty": very_dirty,
-            "super_easy": super_easy,
         })
 
         # Store results in session state
