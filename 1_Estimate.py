@@ -67,10 +67,8 @@ if "inputs" not in st.session_state:
         "structure_type": "Main",
         "rodent_stations": 4,
         "interior_monitoring": False,
-        "include_exterior_windows": False,
         "exterior_standard_windows": 0,
         "exterior_high_windows": 0,
-        "include_interior_windows": False,
         "interior_standard_windows": 0,
         "interior_high_windows": 0,
         "tracks_sills_price": 99.0,
@@ -136,24 +134,12 @@ st.subheader("Rodent Control")
 rodent_stations = st.number_input("Rodent Stations", min_value=0, step=1, value=4, key="rodent_stations")
 interior_monitoring = st.checkbox("Interior Monitoring", key="interior_monitoring")
 
-# Window Cleaning (Updated)
+# Window Cleaning (Restored to Original)
 st.subheader("Window Cleaning")
-include_exterior_windows = st.checkbox("Include Exterior Window Cleaning", key="include_exterior_windows")
-if include_exterior_windows:
-    exterior_standard_windows = st.number_input("Exterior Standard Windows", min_value=0, step=1, key="exterior_standard_windows")
-    exterior_high_windows = st.number_input("Exterior High Windows", min_value=0, step=1, key="exterior_high_windows")
-else:
-    exterior_standard_windows = 0
-    exterior_high_windows = 0
-
-include_interior_windows = st.checkbox("Include Interior Window Cleaning", key="include_interior_windows")
-if include_interior_windows:
-    interior_standard_windows = st.number_input("Interior Standard Windows", min_value=0, step=1, key="interior_standard_windows")
-    interior_high_windows = st.number_input("Interior High Windows", min_value=0, step=1, key="interior_high_windows")
-else:
-    interior_standard_windows = 0
-    interior_high_windows = 0
-
+exterior_standard_windows = st.number_input("Exterior Standard Windows", min_value=0, step=1, key="exterior_standard_windows")
+exterior_high_windows = st.number_input("Exterior High Windows", min_value=0, step=1, key="exterior_high_windows")
+interior_standard_windows = st.number_input("Interior Standard Windows", min_value=0, step=1, key="interior_standard_windows")
+interior_high_windows = st.number_input("Interior High Windows", min_value=0, step=1, key="interior_high_windows")
 tracks_sills_price = st.number_input("Tracks/Sills Price (minimum $99)", min_value=0.0, step=1.0, value=99.0, key="tracks_sills_price")
 
 # Calculate Button
@@ -181,7 +167,7 @@ if st.button("Calculate"):
         elif house_dirtiness == "Heavy":
             house_condition_adder = 152
         house_washing_total = (house_sq_ft * house_base_rate) + house_condition_adder
-        house_washing_total = max(house_washing_total, 449)  # Updated minimum price
+        house_washing_total = max(house_washing_total, 449)  # Individual service minimum
 
         # Pest Control Calculation
         treated_area = total_perimeter * (stories * 10)
@@ -208,17 +194,17 @@ if st.button("Calculate"):
         interior_monitoring_price = 50.00 if interior_monitoring else 0.00
         rodent_control_total = rodent_base_price + rodent_stations_price + interior_monitoring_price
 
-        # Window Cleaning Calculation (Updated)
-        if include_exterior_windows:
-            exterior_windows_total = (exterior_standard_windows * 3.30) + (exterior_high_windows * 5.25)
-            exterior_windows_total = max(exterior_windows_total, 149.00)  # Always apply minimum
-        else:
+        # Window Cleaning Calculation (Restored to Original)
+        exterior_windows_total = (exterior_standard_windows * 3.30) + (exterior_high_windows * 5.25)
+        if exterior_windows_total > 0 and exterior_windows_total < 149.00:
+            exterior_windows_total = 149.00
+        elif exterior_windows_total == 0:
             exterior_windows_total = 0.00
 
-        if include_interior_windows:
-            interior_windows_total = (interior_standard_windows * 2.00) + (interior_high_windows * 4.00)
-            interior_windows_total = max(interior_windows_total, 99.00)  # Always apply minimum
-        else:
+        interior_windows_total = (interior_standard_windows * 2.00) + (interior_high_windows * 4.00)
+        if interior_windows_total > 0 and interior_windows_total < 99.00:
+            interior_windows_total = 99.00
+        elif interior_windows_total == 0:
             interior_windows_total = 0.00
 
         tracks_sills_total = tracks_sills_price if tracks_sills_price > 0 else 99.00
@@ -233,8 +219,9 @@ if st.button("Calculate"):
             "tracks_sills": round(tracks_sills_total, 2),
         }
 
-        # Calculate initial total
+        # Calculate initial total and apply truck minimum
         total = sum(results.values())
+        total = max(total, 299.00)  # Apply truck minimum of $299
         results["total"] = round(total, 2)
 
         # Update inputs in session state
@@ -248,10 +235,8 @@ if st.button("Calculate"):
             "structure_type": structure_type,
             "rodent_stations": rodent_stations,
             "interior_monitoring": interior_monitoring,
-            "include_exterior_windows": include_exterior_windows,
             "exterior_standard_windows": exterior_standard_windows,
             "exterior_high_windows": exterior_high_windows,
-            "include_interior_windows": include_interior_windows,
             "interior_standard_windows": interior_standard_windows,
             "interior_high_windows": interior_high_windows,
             "tracks_sills_price": tracks_sills_price,
@@ -353,7 +338,9 @@ if "show_additional_services" in st.session_state and st.session_state.show_addi
 
         if additional_results:
             st.session_state.results.update(additional_results)
+            # Recalculate total with truck minimum
             total = sum(st.session_state.results.values()) - st.session_state.results.get("total", 0)
+            total = max(total, 299.00)  # Apply truck minimum
             st.session_state.results["total"] = round(total, 2)
         display_pricing_estimate()
 
