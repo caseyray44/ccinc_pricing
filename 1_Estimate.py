@@ -220,6 +220,7 @@ if st.button("Calculate"):
             "interior_windows": round(interior_windows_total, 2),
             "tracks_sills": round(tracks_sills_total, 2),
         }
+        st.write(f"DEBUG: House Washing - Final Stored Value: {results['house_washing']}")
 
         # Calculate initial total and apply truck minimum
         total = sum(results.values())
