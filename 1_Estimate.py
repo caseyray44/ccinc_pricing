@@ -167,14 +167,10 @@ if st.button("Calculate"):
         elif house_dirtiness == "Heavy":
             house_condition_adder = 152
         house_washing_total = (house_sq_ft * house_base_rate) + house_condition_adder
-        st.write(f"DEBUG: House Washing - Sq Ft: {house_sq_ft}, Base Rate: {house_base_rate}, Condition Adder: {house_condition_adder}, Pre-Min Total: {house_washing_total}")
-        # Apply minimum price
-        house_washing_total = max(house_washing_total, 449)  # Individual service minimum
-        st.write(f"DEBUG: House Washing - After Min Total: {house_washing_total}")
-        # Fallback to ensure minimum is applied
-        if house_washing_total < 449:
-            house_washing_total = 449
-            st.write(f"DEBUG: House Washing - Forced Min Applied: {house_washing_total}")
+        st.write(f"DEBUG: House Washing - Sq Ft: {house_sq_ft}, Base Rate: {house_base_rate}, Condition Adder: {house_condition_adder}, Pre-Cap Total: {house_washing_total}")
+        # Cap the price at 449 (maximum, not minimum)
+        house_washing_total = min(house_washing_total, 449)  # Cap the price at $449
+        st.write(f"DEBUG: House Washing - After Cap Total: {house_washing_total}")
 
         # Pest Control Calculation
         treated_area = total_perimeter * (stories * 10)
