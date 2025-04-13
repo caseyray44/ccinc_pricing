@@ -85,6 +85,10 @@ if "inputs" not in st.session_state:
         "concrete_sq_ft": 0,
         "deck_dock_cleaning": "NO",
         "deck_dock_sq_ft": 0,
+        "vinyl_porch_cleaning": "NO",  # New field for vinyl porch cleaning
+        "vinyl_panels": 0,            # New field for number of vinyl panels
+        "storm_windows_cleaning": "NO",  # New field for storm windows cleaning
+        "storm_windows": 0,           # New field for number of storm windows
         "custom_items": [],
     }
 
@@ -162,7 +166,7 @@ if st.button("Calculate"):
         elif house_sq_ft < 10000:
             house_base_rate = 0.067
         else:
-            house_base_rate = 0.132
+            house_base_rate = 0.111
         house_condition_adder = 0
         if house_dirtiness == "Medium":
             house_condition_adder = 76
@@ -256,11 +260,12 @@ if st.button("Calculate"):
         # Show the additional services prompt
         st.session_state.show_additional_services = True
 
-# Additional Services (Unchanged)
+# Additional Services
 if "show_additional_services" in st.session_state and st.session_state.show_additional_services:
-    st.header("Would you like any additional services? (roof treatment, gutter cleaning, roof blow-off, concrete cleaning, deck/dock cleaning, custom items)")
+    st.header("Additional Services")
     additional_services = st.multiselect("Select additional services:", [
-        "roof treatment", "gutter cleaning", "roof blow-off", "concrete cleaning", "deck/dock cleaning", "custom items"
+        "roof treatment", "gutter cleaning", "roof blow-off", "concrete cleaning", 
+        "deck/dock cleaning", "vinyl porch cleaning", "storm windows", "custom items"
     ])
 
     additional_results = {}
@@ -330,6 +335,28 @@ if "show_additional_services" in st.session_state and st.session_state.show_addi
                 st.session_state.inputs.update({
                     "deck_dock_cleaning": "YES",
                     "deck_dock_sq_ft": deck_dock_sq_ft,
+                })
+            elif service == "vinyl porch cleaning":
+                vinyl_panels = st.number_input("Number of Vinyl Panels", min_value=0, step=1, key="vinyl_panels")
+                if vinyl_panels == 0:
+                    st.error("I need more information to calculate the prices. Please provide: number of vinyl panels.")
+                    continue
+                vinyl_porch_price = vinyl_panels * 13.00  # $13 per panel
+                additional_results["vinyl porch cleaning"] = round(vinyl_porch_price, 2)
+                st.session_state.inputs.update({
+                    "vinyl_porch_cleaning": "YES",
+                    "vinyl_panels": vinyl_panels,
+                })
+            elif service == "storm windows":
+                storm_windows = st.number_input("Number of Storm Windows", min_value=0, step=1, key="storm_windows")
+                if storm_windows == 0:
+                    st.error("I need more information to calculate the prices. Please provide: number of storm windows.")
+                    continue
+                storm_windows_price = storm_windows * 20.00  # $20 per storm window
+                additional_results["storm windows"] = round(storm_windows_price, 2)
+                st.session_state.inputs.update({
+                    "storm_windows_cleaning": "YES",
+                    "storm_windows": storm_windows,
                 })
             elif service == "custom items":
                 custom_item_name = st.text_input("Custom Item Name", key="custom_item_name")
