@@ -159,25 +159,26 @@ if st.button("Calculate"):
         house_sq_ft = total_perimeter * max_height
         if house_sq_ft < 6000:
             house_base_rate = 0.094
+        elif house_sq_ft < 10000:
+            house_base_rate = 0.067
         else:
-            house_base_rate = 0.101
+            house_base_rate = 0.132
         house_condition_adder = 0
         if house_dirtiness == "Medium":
             house_condition_adder = 76
         elif house_dirtiness == "Heavy":
             house_condition_adder = 152
         house_washing_total = (house_sq_ft * house_base_rate) + house_condition_adder
-        st.write(f"DEBUG: House Washing - Sq Ft: {house_sq_ft}, Base Rate: {house_base_rate}, Condition Adder: {house_condition_adder}, Pre-Cap Total: {house_washing_total}")
-        # Cap the price at 449 (maximum, not minimum)
-        house_washing_total = min(house_washing_total, 449)  # Cap the price at $449
-        st.write(f"DEBUG: House Washing - After Cap Total: {house_washing_total}")
+        st.write(f"DEBUG: House Washing - Sq Ft: {house_sq_ft}, Base Rate: {house_base_rate}, Condition Adder: {house_condition_adder}, Pre-Min Total: {house_washing_total}")
+        house_washing_total = max(house_washing_total, 429)  # Minimum price
+        st.write(f"DEBUG: House Washing - After Min Total: {house_washing_total}")
 
         # Pest Control Calculation
         treated_area = total_perimeter * (stories * 10)
         if treated_area < 6000:
-            pest_base_rate = 0.049 if structure_type == "Additional" else 0.033
+            pest_base_rate = 0.033 if structure_type == "Main" else 0.049
         else:
-            pest_base_rate = 0.023
+            pest_base_rate = 0.030
         pest_infestation_adder = 0
         if pest_infestation == "Medium":
             pest_infestation_adder = 50
