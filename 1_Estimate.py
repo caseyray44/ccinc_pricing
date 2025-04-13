@@ -85,11 +85,12 @@ if "inputs" not in st.session_state:
         "concrete_sq_ft": 0,
         "deck_dock_cleaning": "NO",
         "deck_dock_sq_ft": 0,
-        "vinyl_porch_cleaning": "NO",  # New field for vinyl porch cleaning
-        "vinyl_panels": 0,            # New field for number of vinyl panels
-        "storm_windows_cleaning": "NO",  # New field for storm windows cleaning
-        "storm_windows": 0,           # New field for number of storm windows
+        "vinyl_porch_cleaning": "NO",
+        "vinyl_panels": 0,
+        "storm_windows_cleaning": "NO",
+        "storm_windows": 0,
         "custom_items": [],
+        "additional_services_list": [],  # New field to store the list of selected additional services
     }
 
 if "results" not in st.session_state:
@@ -263,110 +264,135 @@ if st.button("Calculate"):
 # Additional Services
 if "show_additional_services" in st.session_state and st.session_state.show_additional_services:
     st.header("Additional Services")
-    additional_services = st.multiselect("Select additional services:", [
-        "roof treatment", "gutter cleaning", "roof blow-off", "concrete cleaning", 
-        "deck/dock cleaning", "vinyl porch cleaning", "storm windows", "custom items"
-    ])
 
+    # Initialize the list of selected services if not already present
+    if "additional_services_list" not in st.session_state:
+        st.session_state.additional_services_list = []
+
+    # List of available additional services
+    available_services = [
+        "roof treatment", "gutter cleaning", "roof blow-off", "concrete cleaning",
+        "deck/dock cleaning", "vinyl porch cleaning", "storm windows", "custom items"
+    ]
+
+    # Select a new service to add
+    new_service = st.selectbox("Select an additional service:", [""] + available_services, key="new_additional_service")
+
+    # Button to add the selected service
+    if st.button("Add Service") and new_service:
+        if new_service not in st.session_state.additional_services_list:
+            st.session_state.additional_services_list.append(new_service)
+            # Reset the selectbox to blank after adding
+            st.session_state.new_additional_service = ""
+
+    # Display input fields for each selected service
     additional_results = {}
-    if additional_services:
-        for service in additional_services:
-            if service == "roof treatment":
-                roof_type = st.selectbox("Roof Type", ["Asphalt", "Metal"], key="roof_type")
-                roof_sq_ft = st.number_input("Roof Square Footage", min_value=0, step=100, key="roof_sq_ft")
-                roof_metal_min = st.number_input("Metal Roof Minimum (399 or 599)", min_value=399.0, step=1.0, value=399.0, key="roof_metal_min") if roof_type == "Metal" else 399.0
-                if roof_sq_ft == 0:
-                    st.error("I need more information to calculate the prices. Please provide: roof square footage.")
-                    continue
-                rate = 0.25 if roof_type == "Asphalt" else 0.85
-                min_price = 399.0 if roof_type == "Asphalt" else roof_metal_min
-                roof_price = roof_sq_ft * rate
-                roof_price = max(roof_price, min_price)
-                additional_results["roof treatment"] = round(roof_price, 2)
-                st.session_state.inputs.update({
-                    "roof_treatment": "YES",
-                    "roof_type": roof_type,
-                    "roof_sq_ft": roof_sq_ft,
-                    "roof_metal_min": roof_metal_min,
-                })
-            elif service == "gutter cleaning":
-                gutter_linear_feet = st.number_input("Gutter Linear Feet", min_value=0, step=1, key="gutter_linear_feet")
-                if gutter_linear_feet == 0:
-                    st.error("I need more information to calculate the prices. Please provide: gutter linear feet.")
-                    continue
-                gutter_price = gutter_linear_feet * 0.50
-                gutter_price = max(gutter_price, 149.00)
-                additional_results["gutter cleaning"] = round(gutter_price, 2)
-                st.session_state.inputs.update({
-                    "gutter_cleaning": "YES",
-                    "gutter_linear_feet": gutter_linear_feet,
-                })
-            elif service == "roof blow-off":
-                blow_off_hours = st.number_input("Hours for Roof Blow-Off", min_value=0, step=1, key="blow_off_hours")
-                blow_off_men = st.selectbox("Number of Men", [1, 2], key="blow_off_men")
-                if blow_off_hours == 0:
-                    st.error("I need more information to calculate the prices. Please provide: hours for roof blow-off.")
-                    continue
-                blow_off_price = (blow_off_hours * 149.00) + (blow_off_hours * 42.00 if blow_off_men == 2 else 0)
-                additional_results["roof blow-off"] = round(blow_off_price, 2)
-                st.session_state.inputs.update({
-                    "roof_blow_off": "YES",
-                    "blow_off_hours": blow_off_hours,
-                    "blow_off_men": blow_off_men,
-                })
-            elif service == "concrete cleaning":
-                concrete_sq_ft = st.number_input("Concrete Square Footage", min_value=0, step=100, key="concrete_sq_ft")
-                if concrete_sq_ft == 0:
-                    st.error("I need more information to calculate the prices. Please provide: concrete square footage.")
-                    continue
-                concrete_price = concrete_sq_ft * 0.15
-                additional_results["concrete cleaning"] = round(concrete_price, 2)
-                st.session_state.inputs.update({
-                    "concrete_cleaning": "YES",
-                    "concrete_sq_ft": concrete_sq_ft,
-                })
-            elif service == "deck/dock cleaning":
-                deck_dock_sq_ft = st.number_input("Deck/Dock Square Footage", min_value=0, step=100, key="deck_dock_sq_ft")
-                if deck_dock_sq_ft == 0:
-                    st.error("I need more information to calculate the prices. Please provide: deck/dock square footage.")
-                    continue
-                deck_dock_price = deck_dock_sq_ft * 0.15
-                additional_results["deck/dock cleaning"] = round(deck_dock_price, 2)
-                st.session_state.inputs.update({
-                    "deck_dock_cleaning": "YES",
-                    "deck_dock_sq_ft": deck_dock_sq_ft,
-                })
-            elif service == "vinyl porch cleaning":
-                vinyl_panels = st.number_input("Number of Vinyl Panels", min_value=0, step=1, key="vinyl_panels")
-                if vinyl_panels == 0:
-                    st.error("I need more information to calculate the prices. Please provide: number of vinyl panels.")
-                    continue
-                vinyl_porch_price = vinyl_panels * 13.00  # $13 per panel
-                additional_results["vinyl porch cleaning"] = round(vinyl_porch_price, 2)
-                st.session_state.inputs.update({
-                    "vinyl_porch_cleaning": "YES",
-                    "vinyl_panels": vinyl_panels,
-                })
-            elif service == "storm windows":
-                storm_windows = st.number_input("Number of Storm Windows", min_value=0, step=1, key="storm_windows")
-                if storm_windows == 0:
-                    st.error("I need more information to calculate the prices. Please provide: number of storm windows.")
-                    continue
-                storm_windows_price = storm_windows * 20.00  # $20 per storm window
-                additional_results["storm windows"] = round(storm_windows_price, 2)
-                st.session_state.inputs.update({
-                    "storm_windows_cleaning": "YES",
-                    "storm_windows": storm_windows,
-                })
-            elif service == "custom items":
-                custom_item_name = st.text_input("Custom Item Name", key="custom_item_name")
-                custom_item_price = st.number_input("Custom Item Price", min_value=0.0, step=1.0, key="custom_item_price")
-                if not custom_item_name or custom_item_price == 0:
-                    st.error("I need more information to calculate the prices. Please provide: custom item name and price.")
-                    continue
-                custom_item = {"name": custom_item_name, "price": custom_item_price}
-                st.session_state.inputs["custom_items"].append(custom_item)
-                additional_results[f"custom line item ({custom_item_name})"] = round(custom_item_price, 2)
+    if st.session_state.additional_services_list:
+        for i, service in enumerate(st.session_state.additional_services_list):
+            st.subheader(f"{service.replace('_', ' ').title()}")
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                if service == "roof treatment":
+                    roof_type = st.selectbox("Roof Type", ["Asphalt", "Metal"], key=f"roof_type_{i}")
+                    roof_sq_ft = st.number_input("Roof Square Footage", min_value=0, step=100, key=f"roof_sq_ft_{i}")
+                    roof_metal_min = st.number_input("Metal Roof Minimum (399 or 599)", min_value=399.0, step=1.0, value=399.0, key=f"roof_metal_min_{i}") if roof_type == "Metal" else 399.0
+                    if roof_sq_ft == 0:
+                        st.error("I need more information to calculate the prices. Please provide: roof square footage.")
+                        continue
+                    rate = 0.25 if roof_type == "Asphalt" else 0.85
+                    min_price = 399.0 if roof_type == "Asphalt" else roof_metal_min
+                    roof_price = roof_sq_ft * rate
+                    roof_price = max(roof_price, min_price)
+                    additional_results["roof treatment"] = round(roof_price, 2)
+                    st.session_state.inputs.update({
+                        "roof_treatment": "YES",
+                        "roof_type": roof_type,
+                        "roof_sq_ft": roof_sq_ft,
+                        "roof_metal_min": roof_metal_min,
+                    })
+                elif service == "gutter cleaning":
+                    gutter_linear_feet = st.number_input("Gutter Linear Feet", min_value=0, step=1, key=f"gutter_linear_feet_{i}")
+                    if gutter_linear_feet == 0:
+                        st.error("I need more information to calculate the prices. Please provide: gutter linear feet.")
+                        continue
+                    gutter_price = gutter_linear_feet * 0.50
+                    gutter_price = max(gutter_price, 149.00)
+                    additional_results["gutter cleaning"] = round(gutter_price, 2)
+                    st.session_state.inputs.update({
+                        "gutter_cleaning": "YES",
+                        "gutter_linear_feet": gutter_linear_feet,
+                    })
+                elif service == "roof blow-off":
+                    blow_off_hours = st.number_input("Hours for Roof Blow-Off", min_value=0, step=1, key=f"blow_off_hours_{i}")
+                    blow_off_men = st.selectbox("Number of Men", [1, 2], key=f"blow_off_men_{i}")
+                    if blow_off_hours == 0:
+                        st.error("I need more information to calculate the prices. Please provide: hours for roof blow-off.")
+                        continue
+                    blow_off_price = (blow_off_hours * 149.00) + (blow_off_hours * 42.00 if blow_off_men == 2 else 0)
+                    additional_results["roof blow-off"] = round(blow_off_price, 2)
+                    st.session_state.inputs.update({
+                        "roof_blow_off": "YES",
+                        "blow_off_hours": blow_off_hours,
+                        "blow_off_men": blow_off_men,
+                    })
+                elif service == "concrete cleaning":
+                    concrete_sq_ft = st.number_input("Concrete Square Footage", min_value=0, step=100, key=f"concrete_sq_ft_{i}")
+                    if concrete_sq_ft == 0:
+                        st.error("I need more information to calculate the prices. Please provide: concrete square footage.")
+                        continue
+                    concrete_price = concrete_sq_ft * 0.15
+                    additional_results["concrete cleaning"] = round(concrete_price, 2)
+                    st.session_state.inputs.update({
+                        "concrete_cleaning": "YES",
+                        "concrete_sq_ft": concrete_sq_ft,
+                    })
+                elif service == "deck/dock cleaning":
+                    deck_dock_sq_ft = st.number_input("Deck/Dock Square Footage", min_value=0, step=100, key=f"deck_dock_sq_ft_{i}")
+                    if deck_dock_sq_ft == 0:
+                        st.error("I need more information to calculate the prices. Please provide: deck/dock square footage.")
+                        continue
+                    deck_dock_price = deck_dock_sq_ft * 0.15
+                    additional_results["deck/dock cleaning"] = round(deck_dock_price, 2)
+                    st.session_state.inputs.update({
+                        "deck_dock_cleaning": "YES",
+                        "deck_dock_sq_ft": deck_dock_sq_ft,
+                    })
+                elif service == "vinyl porch cleaning":
+                    vinyl_panels = st.number_input("Number of Vinyl Panels", min_value=0, step=1, key=f"vinyl_panels_{i}")
+                    if vinyl_panels == 0:
+                        st.error("I need more information to calculate the prices. Please provide: number of vinyl panels.")
+                        continue
+                    vinyl_porch_price = vinyl_panels * 13.00  # $13 per panel
+                    additional_results["vinyl porch cleaning"] = round(vinyl_porch_price, 2)
+                    st.session_state.inputs.update({
+                        "vinyl_porch_cleaning": "YES",
+                        "vinyl_panels": vinyl_panels,
+                    })
+                elif service == "storm windows":
+                    storm_windows = st.number_input("Number of Storm Windows", min_value=0, step=1, key=f"storm_windows_{i}")
+                    if storm_windows == 0:
+                        st.error("I need more information to calculate the prices. Please provide: number of storm windows.")
+                        continue
+                    storm_windows_price = storm_windows * 20.00  # $20 per storm window
+                    additional_results["storm windows"] = round(storm_windows_price, 2)
+                    st.session_state.inputs.update({
+                        "storm_windows_cleaning": "YES",
+                        "storm_windows": storm_windows,
+                    })
+                elif service == "custom items":
+                    custom_item_name = st.text_input("Custom Item Name", key=f"custom_item_name_{i}")
+                    custom_item_price = st.number_input("Custom Item Price", min_value=0.0, step=1.0, key=f"custom_item_price_{i}")
+                    if not custom_item_name or custom_item_price == 0:
+                        st.error("I need more information to calculate the prices. Please provide: custom item name and price.")
+                        continue
+                    custom_item = {"name": custom_item_name, "price": custom_item_price}
+                    st.session_state.inputs["custom_items"].append(custom_item)
+                    additional_results[f"custom line item ({custom_item_name})"] = round(custom_item_price, 2)
+
+            with col2:
+                if st.button("Remove", key=f"remove_{i}"):
+                    st.session_state.additional_services_list.pop(i)
+                    st.experimental_rerun()
 
         if additional_results:
             st.session_state.results.update(additional_results)
