@@ -331,7 +331,14 @@ if "show_additional_services" in st.session_state and st.session_state.show_addi
                     "gutter_linear_feet": gutter_linear_feet,
                 })
             elif service == "roof blow-off":
-                blow_off_hours = st.number_input("Hours for Roof Blow-Off", min_value=0, step=1, key="blow_off_hours")
+                blow_off_hours = st.number_input(
+                    "Hours for Roof Blow-Off", 
+                    min_value=0.0, 
+                    max_value=10.0, 
+                    step=0.25, 
+                    format="%.2f", 
+                    key="blow_off_hours"
+                )
                 blow_off_men = st.selectbox("Number of Men", [1, 2], key="blow_off_men")
                 if blow_off_hours == 0:
                     st.error("I need more information to calculate the prices. Please provide: hours for roof blow-off.")
