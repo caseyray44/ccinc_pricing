@@ -1,0 +1,11 @@
+name: Keep Streamlit App Awake
+on:
+  schedule:
+    - cron: '0 */12 * * *'  # Runs every 12 hours
+  workflow_dispatch:  # Allows manual triggering
+jobs:
+  wake-up:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Streamlit App
+        run: curl https://ccincpricing.streamlit.app/
